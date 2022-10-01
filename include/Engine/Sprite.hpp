@@ -2,6 +2,7 @@
 
 #include"DLLDefine.hpp"
 #include <SDL.h>
+#include <memory>
 
 class SDLppRenderer;
 class SDLppTexture;
@@ -9,6 +10,7 @@ class SDLppTexture;
 class ENGINE_API Sprite // Une portion d'une texture
 {
 	public:
+		Sprite(const std::shared_ptr<SDLppTexture>& texture);
 		Sprite(const SDLppTexture& texture);
 		Sprite(const SDLppTexture& texture, const SDL_Rect& rect);
 		Sprite(const Sprite&) = default;

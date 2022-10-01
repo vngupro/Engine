@@ -2,6 +2,11 @@
 #include "SDLppRenderer.hpp"
 #include "SDLppTexture.hpp"
 
+Sprite::Sprite(const std::shared_ptr<SDLppTexture>& texture) :
+Sprite(*texture.get(), (*texture.get()).GetRect())
+{
+}
+
 Sprite::Sprite(const SDLppTexture& texture) :
 Sprite(texture, texture.GetRect())
 {

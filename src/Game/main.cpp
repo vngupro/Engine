@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 #include <SDL.h>
 #include <SDL_image.h>
 #include "SDLpp.hpp"
@@ -17,8 +18,13 @@ int main(int argc, char** argv)
     SDLppWindow window("A4Engine", 1280, 720);
     SDLppRenderer renderer(window);
 
-    SDLppTexture runner = SDLppTexture::LoadFromFile(renderer, "assets/runner.png");
+    ResourceManager::Purge();
+    std::shared_ptr<SDLppTexture> runner = ResourceManager::GetTexture(renderer, "assets/runner.png");// SDLppTexture::LoadFromFile(renderer, "assets/runner.png");
     Sprite sprite(runner);
+    std::cout << runner.use_count() << std::endl;
+    std::shared_ptr<SDLppTexture> runner2 = ResourceManager::GetTexture(renderer, "assets/runner.png");
+    std::cout << runner.use_count() << std::endl;
+
     sprite.Resize(256, 256);
 
     sprite.SetRect(SDL_Rect{ 0, 0, 32, 32 });
@@ -67,6 +73,10 @@ int main(int argc, char** argv)
 
         //    });
     }
+
+    runner.reset();
+    runner2.reset();
+    ResourceManager::Purge();
 
     //Vector2<int> vect(1, 1);
     //Transform transform;
