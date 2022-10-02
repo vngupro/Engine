@@ -5,13 +5,13 @@ add_packages("libsdl", "libsdl_image")
 
 set_allowedarchs("windows|x64")
 set_warnings("allextra")
+set_languages("c++20")
 
 target("Game")
     set_kind("binary")
     add_headerfiles("include/Game/*.h", "include/Game/*.hpp")
     add_includedirs("include/Game")
     add_files("src/Game/*.cpp")
-    add_packages("libsdl", "libsdl_image")
 
     set_rundir("bin/Game") -- Le dossier courant lors de l'exécution des binaires (depuis VS) - c'est depuis ce dossier que les chemins commencent
     set_targetdir("bin/Game/$(plat)_$(arch)_$(mode)") -- Le dossier de sortie des binaires, les $(X) sont remplacés par les valeurs existantes (plat = windows, arch = x64 et mode = debug)

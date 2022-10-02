@@ -11,7 +11,6 @@ std::shared_ptr<SDLppTexture> ResourceManager::GetTexture(SDLppRenderer& rendere
 
 std::shared_ptr<SDLppTexture> ResourceManager::GetTexture_Impl(SDLppRenderer& renderer, const std::string& texturePath)
 {
-	// whyyyy textureMap.contains even when language standard is cpp20
 	if (textureMap.find(texturePath) == textureMap.end())
 	{
 		std::shared_ptr<SDLppTexture> texture = std::make_shared<SDLppTexture>(SDLppTexture::LoadFromFile(renderer, texturePath));

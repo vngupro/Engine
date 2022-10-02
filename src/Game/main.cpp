@@ -19,10 +19,10 @@ int main(int argc, char** argv)
     SDLppRenderer renderer(window);
 
     ResourceManager::Purge();
-    std::shared_ptr<SDLppTexture> runner = ResourceManager::GetTexture(renderer, "assets/runner.png");// SDLppTexture::LoadFromFile(renderer, "assets/runner.png");
+    std::shared_ptr<SDLppTexture> runner = ResourceManager::GetTexture(renderer, "assets/run.png");// SDLppTexture::LoadFromFile(renderer, "assets/runner.png");
     Sprite sprite(runner);
     std::cout << runner.use_count() << std::endl;
-    std::shared_ptr<SDLppTexture> runner2 = ResourceManager::GetTexture(renderer, "assets/runner.png");
+    std::shared_ptr<SDLppTexture> runner2 = ResourceManager::GetTexture(renderer, "assets/run.png");
     std::cout << runner.use_count() << std::endl;
 
     sprite.Resize(256, 256);
@@ -77,20 +77,35 @@ int main(int argc, char** argv)
     runner.reset();
     runner2.reset();
     ResourceManager::Purge();
+    //Vector2<float> v = Vector2<float>::up();
+    Vector2 v = Vector2(1.f, 1.f);
+    std::cout << v << std::endl;    // 1, 1
+    v = v + v;
+    std::cout << v << std::endl;    // 2, 2
+    v += v;
+    std::cout << v << std::endl;    // 4, 4
+    v = v * 2.f;
+    std::cout << v << std::endl;    // 8, 8
+    v *= 2.f;
+    std::cout << v << std::endl;    // 16, 16
+    v = v / 2.f;
+    std::cout << v << std::endl;    // 8, 8
+    v /= 2.f;
+    std::cout << v << std::endl;    // 4, 4
 
-    //Vector2<int> vect(1, 1);
-    //Transform transform;
-    //transform.SetPosition(Vector2(42.f, -6.f));
-    //transform.SetRotation(-270.f);
-    //transform.SetScale(Vector2(0.5f, 2.0f));
+    Transform transform;
+    transform.SetPosition(Vector2(42.f, -6.f));
+    transform.SetRotation(-270.f);
+    transform.SetScale(Vector2(0.5f, 2.0f));
+    std::cout << transform << std::endl;
+    
+    std::cout << transform.TransformPoint(Vector2(0.f, 0.f)) << std::endl;
+    std::cout << transform.TransformPoint(Vector2(10.f, 0.f)) << std::endl;
+    std::cout << transform.TransformPoint(Vector2(0.f, 10.f)) << std::endl;
+    std::cout << transform.TransformPoint(Vector2(21.f, -3.f)) << std::endl;
 
-    //transform.TransformPoint(Vector2(0.f, 0.f));
-    //transform.TransformPoint(Vector2(0.f, 0.f));
-    //transform.TransformPoint(Vector2(0.f, 0.f));
-    //transform.TransformPoint(Vector2(0.f, 0.f));
-
-    //transform.SetScale(Vector2(-0.5f, -2.0f));
-    //transform.TransformPoint(Vector2(-42.f, -42.f));
+    transform.SetScale(Vector2(-0.5f, -2.0f));
+    std::cout << transform.TransformPoint(Vector2(-42.f, -42.f)) << std::endl;
 
     return 0;
 }

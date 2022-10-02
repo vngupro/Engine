@@ -32,8 +32,13 @@ SDLppSurface& SDLppSurface::operator=(SDLppSurface&& Surface) noexcept
 SDLppSurface SDLppSurface::LoadFromFile(const std::string& filepath)
 {
 	SDL_Surface* surface = IMG_Load(filepath.c_str());
+
 	if (!surface)
-		std::cerr << IMG_GetError() << std::endl;
+	{
+		//std::cerr << IMG_GetError() << std::endl;
+		surface = SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0);
+	}
+
 
 	return SDLppSurface(surface);
 }
