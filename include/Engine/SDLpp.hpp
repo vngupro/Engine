@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL.h>
+#include <SDL_gamecontroller.h>
 #include "DLLDefine.hpp"
 
 class ENGINE_API SDLpp

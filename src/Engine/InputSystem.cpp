@@ -56,3 +56,41 @@ void InputSystem::OnAction_Impl(std::string action, ActionFunc actionFunc)
 
 	action_map.emplace(action, actionFunc);
 }
+
+void InputSystem::BindAxis(Uint8 axis, std::string action)
+{
+	Get().BindAxis_Impl(axis, action);
+}
+
+void InputSystem::BindAxis_Impl(Uint8 axis, std::string action)
+{
+	auto range = axis_inputs.equal_range(axis);
+	for (auto it = range.first; it != range.second; it++)
+	{
+		if (it->second == action)
+		{
+			return;
+		}
+	}
+
+	axis_inputs.emplace(axis, action);
+}
+
+void InputSystem::BindGamepadButtonPressed(Uint8 button, std::string action)
+{
+	Get().BindGamepadButtonPressed_Impl(button, action);
+}
+
+void InputSystem::BindGamepadButtonPressed_Impl(Uint8 button, std::string action)
+{
+	auto range = button_inputs.equal_range(button);
+	for (auto it = range.first; it != range.second; it++)
+	{
+		if (it->second == action)
+		{
+			return;
+		}
+	}
+
+	button_inputs.emplace(button, action);
+}

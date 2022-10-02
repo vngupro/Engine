@@ -17,6 +17,20 @@ int main(int argc, char** argv)
 
     SDLppWindow window("A4Engine", 1280, 720);
     SDLppRenderer renderer(window);
+   
+    //	Controller Initialization
+    SDL_GameController* pad = SDL_GameControllerOpen(0);
+    for (int i = 0; i < SDL_NumJoysticks(); i++)
+    {
+        if (SDL_IsGameController(i))
+        {
+            pad = SDL_GameControllerOpen(i);
+            //std::cout << SDL_GameControllerMapping(pad) << std::endl;
+            break;
+        }
+    }
+    SDL_Joystick* joy = SDL_GameControllerGetJoystick(pad);
+    int instanceID = SDL_JoystickInstanceID(joy);
 
     std::shared_ptr<SDLppTexture> runner = ResourceManager::GetTexture(renderer, "assets/run.png");// SDLppTexture::LoadFromFile(renderer, "assets/runner.png");
     Sprite sprite(runner);
@@ -75,6 +89,27 @@ int main(int argc, char** argv)
                     std::cout << InputSystem::Get().mouse_inputs << std::endl;
                     std::cout << InputSystem::Get().action_map << std::endl;
                 }
+                break;
+
+            case SDL_CONTROLLERBUTTONDOWN:
+                    if (event.cbutton.button == SDL_CONTROLLER_BUTTON_B)
+                    {
+                        InputSystem::BindGamepadButtonPressed(SDL_CONTROLLER_BUTTON_B, "Cancel");
+                        std::cout << InputSystem::Get().button_inputs << std::endl;
+                    }
+                    break;
+
+            case SDL_CONTROLLERAXISMOTION:
+                    if (event.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTX)
+                    {
+                        if (event.caxis.value > DEAD_ZONE)
+                        {
+                            InputSystem::BindAxis(SDL_CONTROLLER_AXIS_RIGHTX, "MoveRight");
+                            std::cout << InputSystem::Get().axis_inputs << std::endl;
+                        }
+                    }
+                    break;
+
             default:
                 break;
             }
@@ -121,5 +156,9 @@ int main(int argc, char** argv)
     transform.SetScale(Vector2(-0.5f, -2.0f));
     std::cout << transform.TransformPoint(Vector2(-42.f, -42.f)) << std::endl;
 
+    if (pad != nullptr)
+    {
+        SDL_GameControllerClose(pad);
+    }
     return 0;
 }
