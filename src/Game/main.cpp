@@ -29,8 +29,6 @@ int main(int argc, char** argv)
             break;
         }
     }
-    SDL_Joystick* joy = SDL_GameControllerGetJoystick(pad);
-    int instanceID = SDL_JoystickInstanceID(joy);
 
     std::shared_ptr<SDLppTexture> runner = ResourceManager::GetTexture(renderer, "assets/run.png");// SDLppTexture::LoadFromFile(renderer, "assets/runner.png");
     Sprite sprite(runner);
