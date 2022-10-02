@@ -18,7 +18,6 @@ int main(int argc, char** argv)
     SDLppWindow window("A4Engine", 1280, 720);
     SDLppRenderer renderer(window);
 
-    ResourceManager::Purge();
     std::shared_ptr<SDLppTexture> runner = ResourceManager::GetTexture(renderer, "assets/run.png");// SDLppTexture::LoadFromFile(renderer, "assets/runner.png");
     Sprite sprite(runner);
     std::cout << runner.use_count() << std::endl;
@@ -26,11 +25,8 @@ int main(int argc, char** argv)
     std::cout << runner.use_count() << std::endl;
 
     sprite.Resize(256, 256);
-
     sprite.SetRect(SDL_Rect{ 0, 0, 32, 32 });
-
     Uint64 lastUpdate = SDL_GetPerformanceCounter();
-
     int frameIndex = 0;
     int frameCount = 5;
     float timer = 0.0f;
@@ -56,8 +52,32 @@ int main(int argc, char** argv)
         SDL_Event event;
         while (SDLpp::PollEvent(&event))
         {
-            if (event.type == SDL_QUIT)
+            switch (event.type)
+            {
+            case SDL_QUIT:
                 isOpen = false;
+                break;
+
+            case SDL_KEYDOWN:
+                if (event.key.keysym.sym == SDLK_f)
+                {
+                    InputSystem::BindKeyPressed(event.key.keysym.sym, "Attack");
+                    InputSystem::BindKeyPressed(event.key.keysym.sym, "Interact");
+                    std::cout << InputSystem::Get().key_inputs << std::endl;
+                }
+                break;
+
+            case SDL_MOUSEBUTTONDOWN:
+                if (event.button.button == SDL_BUTTON_LEFT)
+                {
+                    InputSystem::BindMouseButtonPressed(event.button.button, "Fire");
+                    InputSystem::OnAction("Fire", []() { std::cout << "Sir Lynix is the best ! (Just kidding lol)" << std::endl; });
+                    std::cout << InputSystem::Get().mouse_inputs << std::endl;
+                    std::cout << InputSystem::Get().action_map << std::endl;
+                }
+            default:
+                break;
+            }
         }
 
         renderer.SetDrawColor(127, 0, 127, 255);
@@ -66,12 +86,6 @@ int main(int argc, char** argv)
         sprite.Draw(renderer, 147, 257);
         renderer.Present();
 
-        InputSystem::BindKeyPressed(SDLK_SPACE, "Attack");
-        InputSystem::BindMouseButtonPressed(SDL_BUTTON_LEFT, "Attack");
-        //InputSystem::OnAction("Attack", []()
-        //    {
-
-        //    });
     }
 
     runner.reset();

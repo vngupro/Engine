@@ -11,7 +11,8 @@ std::shared_ptr<SDLppTexture> ResourceManager::GetTexture(SDLppRenderer& rendere
 
 std::shared_ptr<SDLppTexture> ResourceManager::GetTexture_Impl(SDLppRenderer& renderer, const std::string& texturePath)
 {
-	if (textureMap.find(texturePath) == textureMap.end())
+	// textureMap.find(texturePath) == textureMap.end()
+	if (!textureMap.contains(texturePath))
 	{
 		std::shared_ptr<SDLppTexture> texture = std::make_shared<SDLppTexture>(SDLppTexture::LoadFromFile(renderer, texturePath));
 		textureMap.emplace(texturePath, texture);
