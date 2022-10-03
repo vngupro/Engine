@@ -87,6 +87,11 @@ int main(int argc, char** argv)
                     std::cout << InputSystem::Get().mouse_inputs << std::endl;
                     std::cout << InputSystem::Get().action_map << std::endl;
                 }
+                else if (event.button.button == SDL_BUTTON_RIGHT)
+                {
+                    InputSystem::RebindKey("Attack");
+                    std::cout << InputSystem::Get().key_inputs << std::endl;
+                }
                 break;
 
             case SDL_CONTROLLERBUTTONDOWN:

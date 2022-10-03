@@ -94,3 +94,37 @@ void InputSystem::BindGamepadButtonPressed_Impl(Uint8 button, std::string action
 
 	button_inputs.emplace(button, action);
 }
+
+void InputSystem::RebindKey(std::string action)
+{
+	Get().RebindKey_Impl(action);
+}
+
+#include <windows.h>
+
+void InputSystem::RebindKey_Impl(std::string action)
+{
+	std::cin.clear();
+	char key = 'a';
+	std::cout << "Enter key to replace : ";
+	Sleep(2000);
+	std::cin >> key;
+	SDL_Keycode keycode = key;
+	
+	auto range = key_inputs.equal_range(keycode);
+	for (auto it = range.first; it != range.second; it++)
+	{
+		if (it->second == action)
+		{
+			std::cout << "Enter new key : " << std::endl;
+			std::cin.clear();
+			Sleep(2000);
+			char new_key = 'a';
+			std::cin >> new_key;
+			SDL_Keycode new_keycode = new_key;
+			key_inputs.emplace(new_keycode, action);
+			key_inputs.erase(it);
+			return;
+		}
+	}
+}

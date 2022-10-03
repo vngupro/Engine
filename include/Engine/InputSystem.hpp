@@ -35,6 +35,7 @@ public:
 	static void BindGamepadButtonPressed(Uint8 button, std::string action);
 	static void BindAxis(Uint8 axis, std::string action);
 	static void OnAction(std::string action, ActionFunc actionFunc);
+	static void RebindKey(std::string action);
 
 private:
 	InputSystem() {};
@@ -43,6 +44,7 @@ private:
 	void BindGamepadButtonPressed_Impl(Uint8 button, std::string action);
 	void BindAxis_Impl(Uint8 axis, std::string action);
 	void OnAction_Impl(std::string action, ActionFunc actionFunc);
+	void RebindKey_Impl(std::string action);
 };
 
 // Dangerous will change it when I'm not lazy anymore
