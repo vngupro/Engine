@@ -39,6 +39,14 @@ Transform::Transform(const Vector2<float>& position, const float& rotation, cons
 {
 }
 
+Transform::~Transform()
+{
+	if (parent != nullptr)
+	{
+		parent = nullptr;
+	}
+}
+
 void Transform::SetPosition(const Vector2<float>& _position)
 {
 	position = _position;

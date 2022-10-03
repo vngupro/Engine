@@ -69,6 +69,9 @@ public:
 	Transform();
 	Transform(const Vector2<float>& position, const float& rotation = 0.f, const Vector2<float>& scale = Vector2<float>(1.f, 1.f));
 
+	// Deconstructor
+	~Transform();
+
 	// Functions
 	void SetPosition(const Vector2<float>& _position);
 	void SetRotation(const float& _rotation);
