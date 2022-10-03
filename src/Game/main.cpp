@@ -125,7 +125,7 @@ int main(int argc, char** argv)
     runner2.reset();
     ResourceManager::Purge();
     //Vector2<float> v = Vector2<float>::up();
-    Vector2 v = Vector2(1.f, 1.f);
+    Vector2<float> v = Vector2<float>(1.f, 1.f);
     std::cout << v << std::endl;    // 1, 1
     v = v + v;
     std::cout << v << std::endl;    // 2, 2
@@ -139,20 +139,29 @@ int main(int argc, char** argv)
     std::cout << v << std::endl;    // 8, 8
     v /= 2.f;
     std::cout << v << std::endl;    // 4, 4
+    v *= 2;
+    std::cout << v << std::endl;    // 8, 8
+    v = v * 2;
+    std::cout << v << std::endl;    // 16, 16
+    v = v / 2;
+    std::cout << v << std::endl;    // 8, 8
+    v /= 2;
+    std::cout << v << std::endl;    // 4, 4
+
 
     Transform transform;
-    transform.SetPosition(Vector2(42.f, -6.f));
+    transform.SetPosition(Vector2<float>(42.f, -6.f));
     transform.SetRotation(-270.f);
-    transform.SetScale(Vector2(0.5f, 2.0f));
+    transform.SetScale(Vector2<float>(0.5f, 2.0f));
     std::cout << transform << std::endl;
     
-    std::cout << transform.TransformPoint(Vector2(0.f, 0.f)) << std::endl;
-    std::cout << transform.TransformPoint(Vector2(10.f, 0.f)) << std::endl;
-    std::cout << transform.TransformPoint(Vector2(0.f, 10.f)) << std::endl;
-    std::cout << transform.TransformPoint(Vector2(21.f, -3.f)) << std::endl;
+    std::cout << transform.TransformPoint(Vector2<float>(0.f, 0.f)) << std::endl;
+    std::cout << transform.TransformPoint(Vector2<float>(10.f, 0.f)) << std::endl;
+    std::cout << transform.TransformPoint(Vector2<float>(0.f, 10.f)) << std::endl;
+    std::cout << transform.TransformPoint(Vector2<float>(21.f, -3.f)) << std::endl;
 
-    transform.SetScale(Vector2(-0.5f, -2.0f));
-    std::cout << transform.TransformPoint(Vector2(-42.f, -42.f)) << std::endl;
+    transform.SetScale(Vector2<float>(-0.5f, -2.0f));
+    std::cout << transform.TransformPoint(Vector2<float>(-42.f, -42.f)) << std::endl;
 
     if (pad != nullptr)
     {

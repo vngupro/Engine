@@ -23,111 +23,15 @@ float Math::Rad2Deg_Impl(const float& angleRad)
 	return angleRad * (180 / M_PI);
 }
 
-Vector2::Vector2()
-{
-	x = 0.f;
-	y = 0.f;
-}
-
-Vector2::Vector2(float x, float y) :
-	x(x),
-	y(y)
-{
-}
-
-Vector2 Vector2::operator+(const Vector2& v) const
-{
-	return Add(v);
-}
-
-Vector2 Vector2::operator+=(const Vector2& v)
-{
-	x += v.x;
-	y += v.y;
-	return *this;
-}
-
-Vector2 Vector2::operator-(const Vector2& v) const
-{
-	return Substract(v);
-}
-
-Vector2 Vector2::operator-=(const Vector2& v)
-{
-	x -= v.x;
-	y -= v.y;
-	return *this;
-}
-
-Vector2 Vector2::operator*(const float& f) const
-{
-	return Multiply(f);
-}
-
-Vector2 Vector2::operator*=(const float& f)
-{
-	x *= f;
-	y *= f;
-	return *this;
-}
-
-Vector2 Vector2::operator/(const float& f) const
-{
-	if (f == 0.f)
-	{
-		std::cerr << "Division by 0" << std::endl;
-		return Vector2(0.f, 0.f);
-	}
-	return Divide(f);
-}
-
-Vector2 Vector2::operator/=(const float& f)
-{
-	if (f == 0.f)
-	{
-		std::cerr << "Division by 0" << std::endl;
-		return Vector2(0.f, 0.f);
-	}
-	x /= f;
-	y /= f;
-	return *this;
-}
-
-Vector2 Vector2::Add(const Vector2& v) const
-{
-	return Vector2(x + v.x, y + v.y);
-}
-
-Vector2 Vector2::Substract(const Vector2& v) const
-{
-	return Vector2(x - v.x, y - v.y);
-}
-
-Vector2 Vector2::Multiply(const float& f) const
-{
-	return Vector2(x * f, y * f);
-}
-
-Vector2 Vector2::Divide(const float& f) const
-{
-	if (f == 0.f)
-	{
-		std::cerr << "Division by 0" << std::endl;
-		return Vector2(0.f, 0.f);
-	}
-
-	return Vector2(x / f, y / f);
-}
-
 Transform::Transform() :
-	position(Vector2(0.f, 0.f)),
+	position(Vector2<float>(0.f, 0.f)),
 	rotation(0.f),
-	scale(Vector2(1.f, 1.f)),
+	scale(Vector2<float>(1.f, 1.f)),
 	parent(nullptr)
 {
 }
 
-Transform::Transform(const Vector2& position, const float& rotation, const Vector2& scale) :
+Transform::Transform(const Vector2<float>& position, const float& rotation, const Vector2<float>& scale) :
 	position(position),
 	rotation(rotation),
 	scale(scale),
@@ -135,7 +39,7 @@ Transform::Transform(const Vector2& position, const float& rotation, const Vecto
 {
 }
 
-void Transform::SetPosition(const Vector2& _position)
+void Transform::SetPosition(const Vector2<float>& _position)
 {
 	position = _position;
 }
@@ -145,12 +49,12 @@ void Transform::SetRotation(const float& _rotation)
 	rotation = _rotation;
 }
 
-void Transform::SetScale(const Vector2& _scale)
+void Transform::SetScale(const Vector2<float>& _scale)
 {
 	scale = _scale;
 }
 
-void Transform::Translate(const Vector2& _position)
+void Transform::Translate(const Vector2<float>& _position)
 {
 	position += _position;
 }
@@ -161,7 +65,7 @@ void Transform::Rotate(const float& _rotation)
 	rotation += _rotation;
 }
 
-void Transform::Scale(const Vector2& _scale)
+void Transform::Scale(const Vector2<float>& _scale)
 {
 	scale += _scale;
 }
@@ -171,7 +75,7 @@ void Transform::SetParent(Transform* _parent)
 	parent = _parent;
 }
 
-Vector2 Transform::TransformPoint(const Vector2& _position)
+Vector2<float> Transform::TransformPoint(const Vector2<float>& _position)
 {
 	Vector2 ret = _position;
 	ret.x *= scale.x;
