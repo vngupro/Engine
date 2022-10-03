@@ -51,7 +51,7 @@ std::ostream& operator<<(std::ostream& stream, const std::multimap<T, std::strin
 {
 	for (auto it = m.begin(); it != m.end(); it++)
 	{
-		stream << it->first << "\t" << it->second << endl;
+		stream << it->first << "\t" << it->second << std::endl;
 	}
 	return stream;
 }
