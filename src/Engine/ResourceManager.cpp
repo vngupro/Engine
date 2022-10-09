@@ -91,4 +91,12 @@ ResourceManager& ResourceManager::Instance()
 	return *s_instance; 
 }
 
+std::string ResourceManager::GetPath(const std::shared_ptr<SDLppTexture>& texture)
+{
+	for (auto it = m_textures.begin(); it != m_textures.end(); ++it)
+		if (it->second == texture)
+			return it->first;
+	return "Path not found";
+}
+
 ResourceManager* ResourceManager::s_instance = nullptr;

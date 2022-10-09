@@ -20,7 +20,7 @@ class ENGINE_API ResourceManager
 		const std::shared_ptr<SDLppTexture>& GetTexture(const std::string& texturePath);
 
 		void Purge();
-
+		std::string GetPath(const std::shared_ptr<SDLppTexture>&);
 		static ResourceManager& Instance();
 
 		ResourceManager& operator=(const ResourceManager&) = delete;
