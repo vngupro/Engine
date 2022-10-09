@@ -1,9 +1,9 @@
-#include "SDLpp.hpp"
+#include <Engine/SDLpp.hpp>
 #include <SDL.h>
 
 SDLpp::SDLpp()
 {
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
+	SDL_Init(0);
 }
 
 SDLpp::~SDLpp()

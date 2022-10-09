@@ -1,4 +1,4 @@
-#include "InputSystem.hpp"
+#include "Engine/InputSystem.hpp"
 
 void InputSystem::BindKeyPressed(SDL_Keycode key, std::string action)
 {
@@ -102,6 +102,12 @@ void InputSystem::RebindKey(std::string action)
 
 #include <windows.h>
 
+/*
+* only work for keycode for now
+*	to test:
+*		bind key F
+*	
+*/
 void InputSystem::RebindKey_Impl(std::string action)
 {
 	std::cin.clear();

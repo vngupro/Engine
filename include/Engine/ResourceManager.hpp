@@ -1,40 +1,35 @@
 #pragma once
-#include "DLLDefine.hpp"
-#include <SDL.h>
-#include <string>
-#include <map>
-#include <memory>
 
-class SDLppTexture;
+#include <Engine/Export.hpp>
+#include <memory> //< std::shared_ptr
+#include <unordered_map> //< std::unordered_map est plus efficace que std::map pour une association clé/valeur
+
 class SDLppRenderer;
+class SDLppTexture;
 
 class ENGINE_API ResourceManager
 {
-public:
-	ResourceManager(const ResourceManager&) = delete;
-	ResourceManager& operator=(const ResourceManager&) = delete;
-	ResourceManager(ResourceManager&&) = delete;
-	ResourceManager& operator=(ResourceManager&&) = delete;
+	public:
+		ResourceManager(SDLppRenderer& renderer);
+		ResourceManager(const ResourceManager&) = delete;
+		ResourceManager(ResourceManager&&) = delete;
+		~ResourceManager();
 
-	static ResourceManager& Get()
-	{
-		static ResourceManager instance;
-		return instance;
-	}
-	
-	static std::shared_ptr<SDLppTexture> GetTexture(SDLppRenderer& renderer, const std::string& texturePath);
-	static void Purge();
-	//static void Register(const std::shared_ptr<SDLppTexture>);
+		void Clear();
 
-private:
-	// Constructor
-	ResourceManager(){}
+		const std::shared_ptr<SDLppTexture>& GetTexture(const std::string& texturePath);
 
-	// Variables
-	std::map<const std::string, std::shared_ptr<SDLppTexture>> textureMap;
+		void Purge();
 
-	// Functions
-	std::shared_ptr<SDLppTexture> GetTexture_Impl(SDLppRenderer& renderer, const std::string& texturePath);
-	void Purge_Impl();
-	//static void Register_Impl(const std::shared_ptr<SDLppTexture>);
+		static ResourceManager& Instance();
+
+		ResourceManager& operator=(const ResourceManager&) = delete;
+		ResourceManager& operator=(ResourceManager&&) = delete;
+
+	private:
+		std::shared_ptr<SDLppTexture> m_missingTexture;
+		std::unordered_map<std::string /*texturePath*/, std::shared_ptr<SDLppTexture>> m_textures;
+		SDLppRenderer& m_renderer;
+
+		static ResourceManager* s_instance;
 };

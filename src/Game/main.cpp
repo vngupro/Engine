@@ -1,15 +1,16 @@
 #include <iostream>
-#include <memory>
 #include <SDL.h>
-#include <SDL_image.h>
-#include "SDLpp.hpp"
-#include "SDLppWindow.hpp"
-#include "SDLppRenderer.hpp"
-#include "SDLppTexture.hpp"
-#include "Sprite.hpp"
-#include "ResourceManager.hpp"
-#include "InputSystem.hpp"
-#include "Math.hpp"
+#include <Engine/InputManager.hpp>
+#include <Engine/ResourceManager.hpp>
+#include <Engine/SDLpp.hpp>
+#include <Engine/SDLppWindow.hpp>
+#include <Engine/SDLppRenderer.hpp>
+#include <Engine/SDLppTexture.hpp>
+#include <Engine/Sprite.hpp>
+#include <Engine/Transform.hpp>
+#include <imgui.h>
+#include <imgui_impl_sdl.h>
+#include <imgui_impl_sdlrenderer.h>
 
 int main(int argc, char** argv)
 {
@@ -17,33 +18,49 @@ int main(int argc, char** argv)
 
     SDLppWindow window("A4Engine", 1280, 720);
     SDLppRenderer renderer(window);
-   
-    //	Controller Initialization
-    SDL_GameController* pad = SDL_GameControllerOpen(0);
-    for (int i = 0; i < SDL_NumJoysticks(); i++)
-    {
-        if (SDL_IsGameController(i))
-        {
-            pad = SDL_GameControllerOpen(i);
-            //std::cout << SDL_GameControllerMapping(pad) << std::endl;
-            break;
-        }
-    }
 
-    std::shared_ptr<SDLppTexture> runner = ResourceManager::GetTexture(renderer, "assets/run.png");// SDLppTexture::LoadFromFile(renderer, "assets/runner.png");
-    Sprite sprite(runner);
-    std::cout << runner.use_count() << std::endl;
-    std::shared_ptr<SDLppTexture> runner2 = ResourceManager::GetTexture(renderer, "assets/run.png");
-    std::cout << runner.use_count() << std::endl;
+    ResourceManager resourceManager(renderer);
+    InputManager inputManager;
 
+    // Setup imgui
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplSDL2_InitForSDLRenderer(window.GetHandle(), renderer.GetHandle());
+    ImGui_ImplSDLRenderer_Init(renderer.GetHandle());
+
+
+    Transform transformParent;
+    Transform transform;
+    transform.SetParent(&transformParent);
+
+    transformParent.SetPosition(Vector2f(300.f, 100.f));
+    transform.SetPosition(Vector2f(150.f, 150.f));
+
+    InputManager::Instance().BindKeyPressed(SDLK_d, "MoveRight");
+
+    std::shared_ptr<SDLppTexture> texture = ResourceManager::Instance().GetTexture("assets/runner.png");
+
+    Sprite sprite(texture);
     sprite.Resize(256, 256);
+
     sprite.SetRect(SDL_Rect{ 0, 0, 32, 32 });
+
     Uint64 lastUpdate = SDL_GetPerformanceCounter();
+
     int frameIndex = 0;
     int frameCount = 5;
     float timer = 0.0f;
 
+    float scale = 1.f;
+
     bool isOpen = true;
+
+    float rotation = 10.f;
+
     while (isOpen)
     {
         Uint64 now = SDL_GetPerformanceCounter();
@@ -59,118 +76,59 @@ int main(int argc, char** argv)
                 frameIndex = 0;  
 
             sprite.SetRect({ frameIndex * 32, 0, 32, 32 });
+
+            std::cout << frameIndex << std::endl;
         }
 
         SDL_Event event;
         while (SDLpp::PollEvent(&event))
         {
-            switch (event.type)
-            {
-            case SDL_QUIT:
+            if (event.type == SDL_QUIT)
                 isOpen = false;
-                break;
 
-            case SDL_KEYDOWN:
-                if (event.key.keysym.sym == SDLK_f)
-                {
-                    InputSystem::BindKeyPressed(event.key.keysym.sym, "Attack");
-                    InputSystem::BindKeyPressed(event.key.keysym.sym, "Interact");
-                    std::cout << InputSystem::Get().key_inputs << std::endl;
-                }
-                break;
+            ImGui_ImplSDL2_ProcessEvent(&event);
 
-            case SDL_MOUSEBUTTONDOWN:
-                if (event.button.button == SDL_BUTTON_LEFT)
-                {
-                    InputSystem::BindMouseButtonPressed(event.button.button, "Fire");
-                    InputSystem::OnAction("Fire", []() { std::cout << "Sir Lynix is the best ! (Just kidding lol)" << std::endl; });
-                    std::cout << InputSystem::Get().mouse_inputs << std::endl;
-                    std::cout << InputSystem::Get().action_map << std::endl;
-                }
-                else if (event.button.button == SDL_BUTTON_RIGHT)
-                {
-                    InputSystem::RebindKey("Attack");
-                    std::cout << InputSystem::Get().key_inputs << std::endl;
-                }
-                break;
-
-            case SDL_CONTROLLERBUTTONDOWN:
-                    if (event.cbutton.button == SDL_CONTROLLER_BUTTON_B)
-                    {
-                        InputSystem::BindGamepadButtonPressed(SDL_CONTROLLER_BUTTON_B, "Cancel");
-                        std::cout << InputSystem::Get().button_inputs << std::endl;
-                    }
-                    break;
-
-            case SDL_CONTROLLERAXISMOTION:
-                    if (event.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTX)
-                    {
-                        if (event.caxis.value > DEAD_ZONE)
-                        {
-                            InputSystem::BindAxis(SDL_CONTROLLER_AXIS_RIGHTX, "MoveRight");
-                            std::cout << InputSystem::Get().axis_inputs << std::endl;
-                        }
-                    }
-                    break;
-
-            default:
-                break;
-            }
+            InputManager::Instance().HandleEvent(event);
         }
+
+        // Start the Dear ImGui frame
+        ImGui_ImplSDLRenderer_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
 
         renderer.SetDrawColor(127, 0, 127, 255);
         renderer.Clear();
 
-        sprite.Draw(renderer, 147, 257);
+
+        ImGui::Begin("Window");
+
+        if (ImGui::InputFloat("Rotation", &rotation, 0.1f, 0.5f))
+        {
+            transformParent.SetRotation(rotation);
+        }
+
+        ImGui::End();
+
+        if (InputManager::Instance().IsActive("MoveRight"))
+        {
+            scale += 0.1f * deltaTime;
+            transformParent.SetScale(Vector2f(scale, scale));
+			//transformParent.Translate(Vector2f(500.f * deltaTime, 0.f));
+            //transformParent.Rotate(30.f * deltaTime);
+        }
+
+        sprite.Draw(renderer, transformParent);
+        sprite.Draw(renderer, transform);
+
+		ImGui::Render();
+		ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+
         renderer.Present();
+	}
+	// Cleanup
+	ImGui_ImplSDLRenderer_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+	ImGui::DestroyContext();
 
-    }
-
-    runner.reset();
-    runner2.reset();
-    ResourceManager::Purge();
-    //Vector2<float> v = Vector2<float>::up();
-    Vector2<float> v = Vector2<float>(1.f, 1.f);
-    std::cout << v << std::endl;    // 1, 1
-    v = v + v;
-    std::cout << v << std::endl;    // 2, 2
-    v += v;
-    std::cout << v << std::endl;    // 4, 4
-    v = v * 2.f;
-    std::cout << v << std::endl;    // 8, 8
-    v *= 2.f;
-    std::cout << v << std::endl;    // 16, 16
-    v = v / 2.f;
-    std::cout << v << std::endl;    // 8, 8
-    v /= 2.f;
-    std::cout << v << std::endl;    // 4, 4
-    v *= 2;
-    std::cout << v << std::endl;    // 8, 8
-    v = v * 2;
-    std::cout << v << std::endl;    // 16, 16
-    v = v / 2;
-    std::cout << v << std::endl;    // 8, 8
-    v /= 2;
-    std::cout << v << std::endl;    // 4, 4
-
-
-    Transform transform;
-    transform.SetPosition(Vector2<float>(42.f, -6.f));
-    transform.SetRotation(-270.f);
-    transform.SetScale(Vector2<float>(0.5f, 2.0f));
-    std::cout << transform << std::endl;
-    
-    std::cout << transform.TransformPoint(Vector2<float>(0.f, 0.f)) << std::endl;
-    std::cout << transform.TransformPoint(Vector2<float>(10.f, 0.f)) << std::endl;
-    std::cout << transform.TransformPoint(Vector2<float>(0.f, 10.f)) << std::endl;
-    std::cout << transform.TransformPoint(Vector2<float>(21.f, -3.f)) << std::endl;
-
-    transform.SetScale(Vector2<float>(-0.5f, -2.0f));
-    std::cout << transform.TransformPoint(Vector2<float>(-42.f, -42.f)) << std::endl;
-
-    if (pad != nullptr)
-    {
-        SDL_GameControllerClose(pad);
-    }
     return 0;
 }

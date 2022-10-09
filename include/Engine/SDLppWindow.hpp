@@ -1,8 +1,8 @@
 #pragma once
 
-#include"DLLDefine.hpp"
-#include <string>
+#include <Engine/Export.hpp>
 #include <SDL.h>
+#include <string>
 
 class ENGINE_API SDLppWindow
 {

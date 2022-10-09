@@ -1,5 +1,5 @@
 #pragma once
-#include "DLLDefine.hpp"
+#include "Export.hpp"
 #include <SDL.h>
 #include <string>
 #include <map>

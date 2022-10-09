@@ -1,6 +1,7 @@
-#include "SDLppTexture.hpp"
-#include "SDLppRenderer.hpp"
-#include "SDLppSurface.hpp"
+#include <Engine/SDLppTexture.hpp>
+#include <Engine/SDLppRenderer.hpp>
+#include <Engine/SDLppSurface.hpp>
+#include <SDL.h>
 #include <SDL_image.h>
 
 SDLppTexture::SDLppTexture(SDLppTexture&& texture) noexcept

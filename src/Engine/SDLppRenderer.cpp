@@ -1,6 +1,7 @@
-#include "SDLppRenderer.hpp"
-#include "SDLppTexture.hpp"
-#include "SDLppWindow.hpp"
+#include <Engine/SDLppRenderer.hpp>
+#include <Engine/SDLppTexture.hpp>
+#include <Engine/SDLppWindow.hpp>
+#include <SDL.h>
 
 SDLppRenderer::SDLppRenderer(SDLppWindow& window)
 {

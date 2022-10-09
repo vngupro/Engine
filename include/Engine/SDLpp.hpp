@@ -1,7 +1,8 @@
 #pragma once
-#include <SDL.h>
-#include <SDL_gamecontroller.h>
-#include "DLLDefine.hpp"
+
+#include <Engine/Export.hpp>
+
+union SDL_Event;
 
 class ENGINE_API SDLpp
 {

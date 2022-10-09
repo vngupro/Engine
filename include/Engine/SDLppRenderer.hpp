@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DLLDefine.hpp"
+#include <Engine/Export.hpp>
 #include <SDL.h>
 
 class SDLppTexture;

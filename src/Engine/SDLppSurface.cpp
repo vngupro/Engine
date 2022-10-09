@@ -1,6 +1,13 @@
-#include "SDLppSurface.hpp"
+#include <Engine/SDLppSurface.hpp>
+#include <SDL.h>
 #include <SDL_image.h>
+#include <cassert>
 #include <iostream>
+
+SDLppSurface::SDLppSurface(int width, int height)
+{
+	m_surface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
+}
 
 SDLppSurface::SDLppSurface(SDLppSurface&& surface) noexcept
 {
@@ -14,9 +21,30 @@ SDLppSurface::~SDLppSurface()
 		SDL_FreeSurface(m_surface);
 }
 
+void SDLppSurface::FillRect(const SDL_Rect& rect, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+{
+	assert(m_surface);
+	SDL_FillRect(m_surface, &rect, SDL_MapRGBA(m_surface->format, r, g, b, a));
+}
+
 SDL_Surface* SDLppSurface::GetHandle() const
 {
 	return m_surface;
+}
+
+Uint8* SDLppSurface::GetPixels()
+{
+	return static_cast<Uint8*>(m_surface->pixels);
+}
+
+const Uint8* SDLppSurface::GetPixels() const
+{
+	return static_cast<const Uint8*>(m_surface->pixels);
+}
+
+bool SDLppSurface::IsValid() const
+{
+	return m_surface != nullptr;
 }
 
 SDLppSurface& SDLppSurface::operator=(SDLppSurface&& Surface) noexcept
@@ -32,13 +60,8 @@ SDLppSurface& SDLppSurface::operator=(SDLppSurface&& Surface) noexcept
 SDLppSurface SDLppSurface::LoadFromFile(const std::string& filepath)
 {
 	SDL_Surface* surface = IMG_Load(filepath.c_str());
-
 	if (!surface)
-	{
-		//std::cerr << IMG_GetError() << std::endl;
-		surface = SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0);
-	}
-
+		std::cerr << IMG_GetError() << std::endl;
 
 	return SDLppSurface(surface);
 }

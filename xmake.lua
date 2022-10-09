@@ -1,32 +1,32 @@
 add_rules("mode.debug", "mode.release")
 
-add_requires("libsdl", "libsdl_image")
-add_packages("libsdl", "libsdl_image")
+add_requires("entt", "fmt", "libsdl", "libsdl_image", "nlohmann_json")
+add_requires("imgui", { configs = { sdl2 = true }})
 
 set_allowedarchs("windows|x64")
 set_warnings("allextra")
-set_languages("c++20")
 
-target("Game")
-    set_kind("binary")
-    add_headerfiles("include/Game/*.h", "include/Game/*.hpp")
-    add_includedirs("include/Game")
-    add_files("src/Game/*.cpp")
+set_rundir("bin") -- Le dossier courant lors de l'exécution des binaires (depuis VS) - c'est depuis ce dossier que les chemins commencent
+set_targetdir("bin/$(plat)_$(arch)_$(mode)") -- Le dossier de sortie des binaires, les $(X) sont remplacés par les valeurs existantes (plat = windows, arch = x64 et mode = debug)
 
-    set_rundir("bin/Game") -- Le dossier courant lors de l'exécution des binaires (depuis VS) - c'est depuis ce dossier que les chemins commencent
-    set_targetdir("bin/Game/$(plat)_$(arch)_$(mode)") -- Le dossier de sortie des binaires, les $(X) sont remplacés par les valeurs existantes (plat = windows, arch = x64 et mode = debug)
-    
-    add_deps("Engine")
+set_languages("c++17")
 
 target("Engine")
     set_kind("shared")
-    add_files("src/Engine/*.cpp")
-    add_headerfiles("include/Engine/*.h", "include/Engine/*.hpp")
-    add_includedirs("include/Engine", {public = true})
-    add_defines("ENGINE_EXPORT")
+    add_defines("ENGINE_BUILD")
+    add_headerfiles("include/Engine/*.h", "include/Engine/*.hpp", "include/Engine/*.inl")
+    add_includedirs("include", { public = true })
+    add_files("src/Engine/**.cpp")
+    add_packages("libsdl", "nlohmann_json", "fmt", "entt", { public = true })
+    add_packages("libsdl_image")
 
-    set_rundir("bin/Engine") -- Le dossier courant lors de l'exécution des binaires (depuis VS) - c'est depuis ce dossier que les chemins commencent
-    set_targetdir("bin/Engine/$(plat)_$(arch)_$(mode)") -- Le dossier de sortie des binaires, les $(X) sont remplacés par les valeurs existantes (plat = windows, arch = x64 et mode = debug)
+target("Game")
+    set_kind("binary")
+    add_deps("Engine")
+    add_headerfiles("include/Game/*.h", "include/Game/*.hpp")
+    add_files("src/Game/**.cpp")
+    add_packages("imgui")
+
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
 --
