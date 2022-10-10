@@ -27,5 +27,5 @@ public:
 
 	void Draw(const SDLppRenderer& renderer, const Transform& transform);
 	void ExportToJson();
-	static void LoadJson(const std::string& filepath);
+	static Model LoadModel(const std::string& filepath);
 };

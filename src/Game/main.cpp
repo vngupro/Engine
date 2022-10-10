@@ -85,10 +85,10 @@ int main(int argc, char** argv)
     //vertices[3].tex_coord = SDL_FPoint{ (m_rect.x + m_rect.w) * invWidth, (m_rect.y + m_rect.h) * invHeight };
 
     indices = { 0, 1, 2, 2, 1, 3 };
-
-    Model house("house", vertices, indices, texture);
+    std::cout << vertices[0].color.a << std::endl;
+    //Model house("house", vertices, indices, texture);
     //house.ExportToJson();
-    Model::LoadJson("assets/house.model");
+    Model::LoadModel("assets/house.model");
     return 0;
 
     // Setup imgui
