@@ -29,112 +29,114 @@ int main(int argc, char** argv)
     ResourceManager resourceManager(renderer);
     InputManager inputManager;
     
+    // Sprite runner = player
     std::shared_ptr<SDLppTexture> texture = ResourceManager::Instance().GetTexture("assets/runner.png");
+    
     Sprite sprite(texture);
     sprite.Resize(256, 256);
-
     sprite.SetRect(SDL_Rect{ 0, 0, 32, 32 });
-
     
+    Transform transform;
+    Transform transformParent;
+    transform.SetPosition(Vector2f(150.f, 150.f));
+    transformParent.SetPosition(Vector2f(300.f, 100.f));
+    transform.SetParent(&transformParent);
+
+    std::shared_ptr<SDLppTexture> houseTex = ResourceManager::Instance().GetTexture("assets/house1772x1920.png");
+    SDL_Rect houseTexRect = houseTex.get()->GetRect();
+
+    Transform houseTransform;
+    houseTransform.SetPosition(Vector2f(150.f, 150.f));
+    
+    // for debug purpose only
+    //Sprite houseSprite(houseTex);
+    //houseSprite.Resize(houseTexRect.w / 10.f, houseTexRect.h / 10.f);
+    float houseW = houseTexRect.w / 10.f;
+    float houseH = houseTexRect.h / 10.f;
+
     std::vector<SDL_Vertex> vertices;
     std::vector<int> indices;
 
-    SDL_Rect texRect = texture.get()->GetRect();
+    Vector2f topLeftCorner = houseTransform.TransformPoint(Vector2f(0.f, 0.f));
+    Vector2f topRightCorner = houseTransform.TransformPoint(Vector2f(houseW, 0.f));
+    Vector2f bottomLeftCorner = houseTransform.TransformPoint(Vector2f(0.f, houseH));
+    Vector2f bottomRightCorner = houseTransform.TransformPoint(Vector2f(houseW, houseH));
 
-    //Vector2f topLeftCorner = transform.TransformPoint(Vector2f(0.f, 0.f));
-    //Vector2f topRightCorner = transform.TransformPoint(Vector2f(m_width, 0.f));
-    //Vector2f bottomLeftCorner = transform.TransformPoint(Vector2f(0.f, m_height));
-    //Vector2f bottomRightCorner = transform.TransformPoint(Vector2f(m_width, m_height));
-    Transform transformParent;
-    Transform transform;
-    transform.SetParent(&transformParent);
+    float offsetX = 0.18f;
+    float offsetY = 0.15f;
+    // the position of the vertices are going to be the width and height of the model
 
-    transformParent.SetPosition(Vector2f(300.f, 100.f));
-    transform.SetPosition(Vector2f(150.f, 150.f));
-
-    Vector2f topLeftCorner = transform.TransformPoint(Vector2f(0.f, 0.f));
-    Vector2f topRightCorner = transform.TransformPoint(Vector2f(200.f, 0.f));
-    Vector2f bottomLeftCorner = transform.TransformPoint(Vector2f(0.f, 200.f));
-    Vector2f bottomRightCorner = transform.TransformPoint(Vector2f(200.f, 200.f));
-
-    //float invWidth = 1.f / texRect.w;
-    //float invHeight = 1.f / texRect.h;
-
-    //SDL_Vertex vertices[4];
-    SDL_Vertex vertex
+    /*
+    *               0
+    *              / \
+    *             /   \
+    *            1_____2
+    *            |\    |
+    *            |  \  |
+    *            3____\4
+    */
+    SDL_Vertex vertex0
     {
-        SDL_FPoint{ topLeftCorner.x, topLeftCorner.y },
-        SDL_Color{ 255, 255, 255, 255 },
-        //SDL_FPoint{ m_rect.x * invWidth, m_rect.y * invHeight };
-
+        SDL_FPoint{ topLeftCorner.x + houseW / 2.f, topLeftCorner.y },
+        SDL_Color { 255, 255, 255, 255 },
+        SDL_FPoint{ 0.5f, 0.f }
+        //SDL_FPoint{ m_rect.x * invWidth, m_rect.y * invHeight } // I don't understand the formula
     };
-    vertices.push_back(vertex);
+    vertices.emplace_back(vertex0);
+
+    SDL_Vertex vertex1
+    {
+        SDL_FPoint{ topLeftCorner.x, topLeftCorner.y + houseH / 2.f },
+        SDL_Color{ 255, 255, 255, 255 },
+        SDL_FPoint{ 0.f + offsetX, 0.5f }
+    };
+    //vertices[1].tex_coord = SDL_FPoint{ (m_rect.x + m_rect.w) * invWidth, m_rect.y * invHeight };
+    vertices.emplace_back(vertex1);
 
     SDL_Vertex vertex2
     {
-        SDL_FPoint{ topRightCorner.x, topRightCorner.y },
-        SDL_Color{ 255, 255, 255, 255 }
+        SDL_FPoint{ topRightCorner.x, topRightCorner.y + houseH / 2.f },
+        SDL_Color{ 255, 255, 255, 255 },
+        SDL_FPoint{ 1.f - offsetX, 0.5f }
     };
-    //vertices[1].tex_coord = SDL_FPoint{ (m_rect.x + m_rect.w) * invWidth, m_rect.y * invHeight };
-    vertices.push_back(vertex2);
-
+    vertices.emplace_back(vertex2);
 
     SDL_Vertex vertex3
     {
         SDL_FPoint{ bottomLeftCorner.x, bottomLeftCorner.y },
-        SDL_Color{ 255, 255, 255, 255 }
+        SDL_Color{ 255, 255, 255, 255 },
+        SDL_FPoint{ 0.f + offsetX, 1.0f - offsetY }
     };
-    vertices.push_back(vertex3);
+    vertices.emplace_back(vertex3);
 
     SDL_Vertex vertex4
     {
         SDL_FPoint{ bottomRightCorner.x, bottomRightCorner.y },
-        SDL_Color{ 255, 255, 255, 255 }
+        SDL_Color{ 255, 255, 255, 255 },
+        SDL_FPoint{ 1.f - offsetX, 1.f - offsetY}
     };
-    vertices.push_back(vertex4);
+    vertices.emplace_back(vertex4);
 
     //vertices[2].tex_coord = SDL_FPoint{ m_rect.x * invWidth, (m_rect.y + m_rect.h) * invHeight };
     //vertices[3].tex_coord = SDL_FPoint{ (m_rect.x + m_rect.w) * invWidth, (m_rect.y + m_rect.h) * invHeight };
 
-    indices = { 0, 1, 2, 2, 1, 3 };
-    std::cout << vertices[0].color.a << std::endl;
-    //Model house("house", vertices, indices, texture);
-    //house.ExportToJson();
-    Model::LoadModel("assets/house.model");
-
+    indices = { 0, 1, 2, 1, 3, 4, 1, 4, 2 };
+    
+    Model house("house", vertices, indices, houseTex);
+    house.ExportToJson();
+    Model house2 = Model::LoadModel("assets/house.model");
     
     // ENTT
     entt::registry registry;
     entt::entity anEntity = registry.create();
     registry.emplace<Transform>(anEntity, transform);
-    //registry.emplace<Position>(anEntity, 0.f, 50.f);
-    registry.emplace<Velocity>(anEntity, 0.f, -10.f);
+    registry.emplace<Velocity>(anEntity, 0.f, -0.5f);
     registry.emplace<Name>(anEntity, "Player");
     VelocitySystem velocitySystem;
     RenderSystem renderSystem;
 
     entt::entity player = registry.create();
     {
-        // Une position de départ
-        //auto& entityPos = registry.emplace<Position>(player);
-        //entityPos.x = 200.f;
-        //entityPos.y = 200.f;
-
-
-        //entityTransform.SetPosition(Vector2f(200.f, 200.f));
-
-        // Une façon de l'afficher
-        //auto& entityDrawable = registry.emplace<Drawable>(player);
-        //entityDrawable.width = 640.f / 5.f;
-        //entityDrawable.height = 427.f / 5.f;
-        //entityDrawable.texture = ResourceManager::Instance().GetTexture("assets/runner.png");;
-
-        
-        // Une vélocité
-        //auto& entityVelocity = registry.emplace<Velocity>(player, 0.f, -10.f);
-        //entityVelocity.x = 0.f;
-        //entityVelocity.y = 0.f;
-        
         auto& entityTransform = registry.emplace<Transform>(player, transform);
         auto& entitySprite = registry.emplace<Sprite>(player, sprite);
         auto& entityVelocity = registry.emplace<Velocity>(player, 0.f, -10.f);
@@ -229,8 +231,10 @@ int main(int argc, char** argv)
             //transformParent.Rotate(30.f * deltaTime);
         }
 
+        //houseSprite.Draw(renderer, houseTransform);
         sprite.Draw(renderer, transformParent);
         sprite.Draw(renderer, transform);
+        house2.Draw(renderer, transform);
 
 		ImGui::Render();
 		ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());

@@ -12,21 +12,6 @@ RenderSystem::RenderSystem()
 
 void RenderSystem::Update(entt::registry& registry, SDLppRenderer& renderer)
 {
-	//auto view = registry.view<Position, Drawable>();
-	//for (entt::entity entity : view)
-	//{
-	//	auto& entityPos = view.get<Position>(entity);
-	//	auto& entityDrawable = view.get<Drawable>(entity);
-
-	//	SDL_Rect rect;
-	//	rect.x = static_cast<int>(entityPos.x);
-	//	rect.y = static_cast<int>(entityPos.y);
-	//	rect.w = entityDrawable.width;
-	//	rect.h = entityDrawable.height;
-
-	//	renderer.RenderCopy(*entityDrawable.texture, rect);
-	//}
-
 	auto view = registry.view<Transform, Sprite>();
 	for (entt::entity entity : view)
 	{
@@ -45,7 +30,9 @@ void RenderSystem::Update(entt::registry& registry, SDLppRenderer& renderer, Cam
 		auto& entityTransform = view.get<Transform>(entity);
 		auto& entitySprite = view.get<Sprite>(entity);
 
-		camera.m_transform.GetPosition();
+		camera.m_transform.GetGlobalPosition();
+		entityTransform.GetGlobalPosition();
+		 
 		entitySprite.Draw(renderer, entityTransform);
 	}
 }

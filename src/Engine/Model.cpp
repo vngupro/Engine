@@ -47,10 +47,6 @@ void Model::ExportToJson()
         j["vertices"][i]["tex_coord"] = { m_vertices[i].tex_coord.x, m_vertices[i].tex_coord.y };
     }
 
-    //// count elements
-    //auto s = j.size();
-    //j["size"] = s;
-
     // for debug purpose
     //std::cout << std::setw(4) << j << '\n';
 
