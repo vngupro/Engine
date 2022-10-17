@@ -12,6 +12,12 @@
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_sdlrenderer.h>
+#include <entt/entt.hpp>
+#include <Engine/VelocityComponent.h>
+#include <Engine/VelocitySystem.hpp>
+#include <Engine/RenderSystem.hpp>
+#include <Engine/CameraComponent.hpp>
+#include <Engine/Structure.hpp>
 
 int main(int argc, char** argv)
 {
@@ -22,8 +28,14 @@ int main(int argc, char** argv)
 
     ResourceManager resourceManager(renderer);
     InputManager inputManager;
-
+    
     std::shared_ptr<SDLppTexture> texture = ResourceManager::Instance().GetTexture("assets/runner.png");
+    Sprite sprite(texture);
+    sprite.Resize(256, 256);
+
+    sprite.SetRect(SDL_Rect{ 0, 0, 32, 32 });
+
+    
     std::vector<SDL_Vertex> vertices;
     std::vector<int> indices;
 
@@ -89,7 +101,51 @@ int main(int argc, char** argv)
     //Model house("house", vertices, indices, texture);
     //house.ExportToJson();
     Model::LoadModel("assets/house.model");
-    return 0;
+
+    
+    // ENTT
+    entt::registry registry;
+    entt::entity anEntity = registry.create();
+    registry.emplace<Transform>(anEntity, transform);
+    //registry.emplace<Position>(anEntity, 0.f, 50.f);
+    registry.emplace<Velocity>(anEntity, 0.f, -10.f);
+    registry.emplace<Name>(anEntity, "Player");
+    VelocitySystem velocitySystem;
+    RenderSystem renderSystem;
+
+    entt::entity player = registry.create();
+    {
+        // Une position de départ
+        //auto& entityPos = registry.emplace<Position>(player);
+        //entityPos.x = 200.f;
+        //entityPos.y = 200.f;
+
+
+        //entityTransform.SetPosition(Vector2f(200.f, 200.f));
+
+        // Une façon de l'afficher
+        //auto& entityDrawable = registry.emplace<Drawable>(player);
+        //entityDrawable.width = 640.f / 5.f;
+        //entityDrawable.height = 427.f / 5.f;
+        //entityDrawable.texture = ResourceManager::Instance().GetTexture("assets/runner.png");;
+
+        
+        // Une vélocité
+        //auto& entityVelocity = registry.emplace<Velocity>(player, 0.f, -10.f);
+        //entityVelocity.x = 0.f;
+        //entityVelocity.y = 0.f;
+        
+        auto& entityTransform = registry.emplace<Transform>(player, transform);
+        auto& entitySprite = registry.emplace<Sprite>(player, sprite);
+        auto& entityVelocity = registry.emplace<Velocity>(player, 0.f, -10.f);
+
+        //// Nous ne voulons pas qu'il soit soumis à la gravité
+        //registry.emplace<NoGravity>(player);
+
+        //// Nous voulons pouvoir le contrôler
+        //registry.emplace<Input>(player);
+    }
+    //return 0;
 
     // Setup imgui
     IMGUI_CHECKVERSION();
@@ -104,11 +160,6 @@ int main(int argc, char** argv)
     InputManager::Instance().BindKeyPressed(SDLK_d, "MoveRight");
 
     //std::shared_ptr<SDLppTexture> texture = ResourceManager::Instance().GetTexture("assets/runner.png");
-
-    Sprite sprite(texture);
-    sprite.Resize(256, 256);
-
-    sprite.SetRect(SDL_Rect{ 0, 0, 32, 32 });
 
     Uint64 lastUpdate = SDL_GetPerformanceCounter();
 
@@ -138,7 +189,7 @@ int main(int argc, char** argv)
 
             sprite.SetRect({ frameIndex * 32, 0, 32, 32 });
 
-            std::cout << frameIndex << std::endl;
+            //std::cout << frameIndex << std::endl;
         }
 
         SDL_Event event;
@@ -183,6 +234,9 @@ int main(int argc, char** argv)
 
 		ImGui::Render();
 		ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+
+        velocitySystem.Update(registry);
+        renderSystem.Update(registry, renderer);
 
         renderer.Present();
 	}
