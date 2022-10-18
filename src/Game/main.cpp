@@ -153,8 +153,14 @@ int main(int argc, char** argv)
 
     RenderSystem renderSystem;
     VelocitySystem velocitySystem;
-    //return 0;
 
+    Vector2f camOffset(500.0f, 10.0f);
+    Transform camTransform;
+    camTransform.SetPosition(Vector2f(1280.f / 2 + camOffset.x, 720.f / 2 + camOffset.y));
+    //camTransform.SetPosition(Vector2f(0.f, 0.f));
+    CameraComponent camera(camTransform, 1280, 720);
+    //return 0;
+    renderSystem.Update(registry, renderer, camera);
     // Setup imgui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -241,8 +247,10 @@ int main(int argc, char** argv)
         //sprite.Draw(renderer, transformParent);
         //sprite.Draw(renderer, transform);
         house2.Draw(renderer, transform);
-        renderSystem.Update(registry, renderer);
-        velocitySystem.Update(registry);
+
+        //renderSystem.Update(registry, renderer);
+        renderSystem.Update(registry, renderer, camera);
+        //velocitySystem.Update(registry);
 
 		ImGui::Render();
 		ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());

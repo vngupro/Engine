@@ -5,6 +5,7 @@
 #include <Engine/Structure.hpp>
 #include <Engine/SDLppRenderer.hpp>
 #include <Engine/CameraComponent.hpp>
+#include <iostream>
 
 RenderSystem::RenderSystem()
 {
@@ -30,9 +31,44 @@ void RenderSystem::Update(entt::registry& registry, SDLppRenderer& renderer, Cam
 		auto& entityTransform = view.get<Transform>(entity);
 		auto& entitySprite = view.get<Sprite>(entity);
 
-		camera.m_transform.GetGlobalPosition();
-		entityTransform.GetGlobalPosition();
-		 
-		entitySprite.Draw(renderer, entityTransform);
+		// compare to camera how sprite should move ???
+		// frutrum calculation ?? (it's for 3D so no)
+		// orthographic size ?? 
+		// camH * 2 = viewport H
+		// camW * 2 = viewport W
+		// from point in local space camera
+		// where is the Sprite ??
+		// once you got pos of sprite depending of camera position
+		// if camera move in an axe
+		// sprite go inverse of that axe movement
+		// should camera be 0, 0 ????
+		// value are so weird
+		//
+		// std::cout << "Cam pos g : " << camera.m_transform.GetGlobalPosition() << std::endl;
+		//std::cout << "Cam pos : " << camera.m_transform.GetPosition() << std::endl;
+		//std::cout << "Entt pos : " << entityTransform.GetPosition() << std::endl;
+		//std::cout << "Entt pos g : " << entityTransform.GetGlobalPosition() << std::endl;
+
+		//std::cout << "entity compare to camera : " << entityTransform.TransformPoint(camera.m_transform.GetGlobalPosition()) << std::endl;
+		
+		float viewportW = camera.m_width;
+		float viewportH = camera.m_height;
+		float viewport_min_x = camera.m_transform.GetGlobalPosition().x - camera.m_width / 2;
+		float viewport_max_x = camera.m_transform.GetGlobalPosition().x + camera.m_width / 2;
+		float viewport_min_y = camera.m_transform.GetGlobalPosition().y - camera.m_height / 2;
+		float viewport_max_y = camera.m_transform.GetGlobalPosition().y + camera.m_height / 2;
+
+		//std::cout << "viewport W : " << viewportW << std::endl;
+		//std::cout << "viewport H : " << viewportH << std::endl;
+		//std::cout << "viewport_min_x : " << viewport_min_x << std::endl;
+		//std::cout << "viewport_max_x : " << viewport_max_x << std::endl;
+		//std::cout << "viewport_min_y : " << viewport_min_y << std::endl;
+		//std::cout << "viewport_max_y : " << viewport_max_y << std::endl;
+
+		//Vector2f pos(entityTransform.GetGlobalPosition().x - viewport_min_x, entityTransform.GetGlobalPosition().y -viewport_min_y);
+		Vector2f pos (entityTransform.GetPosition().x - viewport_min_x, entityTransform.GetPosition().y -viewport_min_y);
+		Transform transform = entityTransform;
+		transform.SetPosition(pos);
+		entitySprite.Draw(renderer, transform);
 	}
 }

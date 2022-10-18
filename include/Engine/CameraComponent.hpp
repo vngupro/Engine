@@ -1,15 +1,15 @@
 #pragma once
-#include <entt/entt.hpp>
+#include <Engine/Export.hpp>
 #include <Engine/Transform.hpp>
 
 //class Transform; // why incomplete type not authorized error ???
 
-class CameraComponent
+class ENGINE_API CameraComponent
 {
 	// you have a camera if move right entity move left
 	// if rotate -> entity has a circular motion
 public:
-	CameraComponent();
+	//CameraComponent();
 	CameraComponent(const Transform& transform, int width, int height);
 
 public:
