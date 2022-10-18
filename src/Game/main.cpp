@@ -29,19 +29,7 @@ int main(int argc, char** argv)
     ResourceManager resourceManager(renderer);
     InputManager inputManager;
     
-    // Sprite runner = player
-    std::shared_ptr<SDLppTexture> texture = ResourceManager::Instance().GetTexture("assets/runner.png");
-    
-    Sprite sprite(texture);
-    sprite.Resize(256, 256);
-    sprite.SetRect(SDL_Rect{ 0, 0, 32, 32 });
-    
-    Transform transform;
-    Transform transformParent;
-    transform.SetPosition(Vector2f(150.f, 150.f));
-    transformParent.SetPosition(Vector2f(300.f, 100.f));
-    transform.SetParent(&transformParent);
-
+    // HOUSE 
     std::shared_ptr<SDLppTexture> houseTex = ResourceManager::Instance().GetTexture("assets/house1772x1920.png");
     SDL_Rect houseTexRect = houseTex.get()->GetRect();
 
@@ -131,26 +119,40 @@ int main(int argc, char** argv)
     //Model house4 = Model::LoadModelFromBinary("assets/house.bmodel");
     
     // ENTT
+    // Sprite runner = player
+    std::shared_ptr<SDLppTexture> texture = ResourceManager::Instance().GetTexture("assets/runner.png");
+
+    Sprite sprite(texture);
+    sprite.Resize(256, 256);
+    sprite.SetRect(SDL_Rect{ 0, 0, 32, 32 });
+
+    Transform transform;
+    transform.SetPosition(Vector2f(150.f, 150.f));
+    
+    Transform transformParent;
+    transformParent.SetPosition(Vector2f(300.f, 100.f));
+    
+    transform.SetParent(&transformParent);
+
     entt::registry registry;
-    entt::entity anEntity = registry.create();
-    registry.emplace<Transform>(anEntity, transform);
-    registry.emplace<Velocity>(anEntity, 0.f, -0.5f);
-    registry.emplace<Name>(anEntity, "Player");
-    VelocitySystem velocitySystem;
-    RenderSystem renderSystem;
 
     entt::entity player = registry.create();
     {
+        auto& entityName = registry.emplace<Name>(player, "Player");
         auto& entityTransform = registry.emplace<Transform>(player, transform);
         auto& entitySprite = registry.emplace<Sprite>(player, sprite);
-        auto& entityVelocity = registry.emplace<Velocity>(player, 0.f, -10.f);
-
-        //// Nous ne voulons pas qu'il soit soumis à la gravité
-        //registry.emplace<NoGravity>(player);
-
-        //// Nous voulons pouvoir le contrôler
-        //registry.emplace<Input>(player);
     }
+    
+    entt::entity parent = registry.create();
+    {
+        auto& entityName = registry.emplace<Name>(parent, "Parent");
+        auto& entityTransform = registry.emplace<Transform>(parent, transformParent);
+        auto& entitySprite = registry.emplace<Sprite>(parent, sprite);
+        auto& entityVelocity = registry.emplace<Velocity>(parent, 0.f, 0.1f);
+    }
+
+    RenderSystem renderSystem;
+    VelocitySystem velocitySystem;
     //return 0;
 
     // Setup imgui
@@ -236,15 +238,14 @@ int main(int argc, char** argv)
         }
 
         //houseSprite.Draw(renderer, houseTransform);
-        sprite.Draw(renderer, transformParent);
-        sprite.Draw(renderer, transform);
+        //sprite.Draw(renderer, transformParent);
+        //sprite.Draw(renderer, transform);
         house2.Draw(renderer, transform);
+        renderSystem.Update(registry, renderer);
+        velocitySystem.Update(registry);
 
 		ImGui::Render();
 		ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
-
-        velocitySystem.Update(registry);
-        renderSystem.Update(registry, renderer);
 
         renderer.Present();
 	}
