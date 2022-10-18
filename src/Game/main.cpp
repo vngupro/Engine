@@ -123,8 +123,12 @@ int main(int argc, char** argv)
     indices = { 0, 1, 2, 1, 3, 4, 1, 4, 2 };
     
     Model house("house", vertices, indices, houseTex);
-    house.ExportToJson();
-    Model house2 = Model::LoadModel("assets/house.model");
+    //house.ExportToJson();
+    house.ExportToCbor();
+    house.ExportToBinary();
+    Model house2 = Model::LoadModelFromJson("assets/house.model");
+    Model house3 = Model::LoadModelFromCbor("assets/house.cmodel");
+    //Model house4 = Model::LoadModelFromBinary("assets/house.bmodel");
     
     // ENTT
     entt::registry registry;

@@ -7,11 +7,9 @@
 #include <fstream>
 #include <iostream>
 
-//Model::Model() :
-//	m_vertices(),
-//	m_indices()
-//{
-//}
+Model::Model()
+{
+}
 
 Model::Model(const std::string& name, const std::vector<SDL_Vertex>& vertices, const std::vector<int>& indices, const std::shared_ptr<SDLppTexture> texture) :
 	m_name(name),
@@ -24,14 +22,9 @@ Model::Model(const std::string& name, const std::vector<SDL_Vertex>& vertices, c
 void Model::Draw(const SDLppRenderer& renderer, const Transform& transform)
 {
 	SDL_RenderGeometry(renderer.GetHandle(), m_texture.get()->GetHandle(), &m_vertices[0], m_vertices.size(), &m_indices[0], m_indices.size());
-	//(SDL_Renderer * renderer,
-	//	SDL_Texture * texture,
-	//	const SDL_Vertex * vertices, int num_vertices,
-	//	const int* indices, int num_indices);
 }
 
-
-void Model::ExportToJson()
+json Model::ExportToJson()
 {
     json j =
     {
@@ -53,9 +46,54 @@ void Model::ExportToJson()
     // Write to file
     std::ofstream fichier{ "assets/" + m_name + ".model"};
     fichier << std::setw(4) << j << "\n";
+
+    return j;
 }
 
-Model Model::LoadModel(const std::string& filepath)
+void Model::ExportToCbor()
+{
+    json j = ExportToJson();
+
+    // serialize it to CBOR
+    std::vector<std::uint8_t> v = json::to_cbor(j);
+
+    // print the vector content for debug purpose only
+    //for (auto& byte : v)
+    //{
+    //    std::cout << "0x" << std::hex << std::setw(2) << std::setfill('0') << (int)byte << " ";
+    //}
+    //std::cout << std::endl;
+
+    // export file
+    std::ofstream fichier{ "assets/" + m_name + ".cmodel" };
+    for (auto& byte : v)
+    {
+        fichier << "0x" << std::hex << std::setw(2) << std::setfill('0') << (int)byte << std::endl;
+    }
+}
+
+void Model::ExportToBinary()
+{
+    json j = ExportToJson();
+
+    // serialize it to BSON
+    std::vector<std::uint8_t> v = json::to_bson(j);
+
+    //print the vector content for debug purpose only
+    //for (auto& byte : v)
+    //{
+    //    std::cout << "0x" << std::hex << std::setw(2) << std::setfill('0') << (int)byte << " ";
+    //}
+    //std::cout << std::endl;
+
+    std::ofstream fichier{ "assets/" + m_name + ".bmodel" };
+    for (auto& byte : v)
+    {
+        fichier << "0x" << std::hex << std::setw(2) << std::setfill('0') << (int)byte << std::endl;
+    }
+}
+
+Model Model::LoadModelFromJson(const std::string& filepath)
 {
     json j =
     {
@@ -91,3 +129,44 @@ Model Model::LoadModel(const std::string& filepath)
 
     return Model("name", vertices, indices, texture);
 }
+
+Model Model::LoadModelFromCbor(const std::string& filepath)
+{
+    // create byte vector
+    std::vector<std::uint8_t> v;
+    std::ifstream fichier(filepath);
+    std::string data = "";
+    while (getline(fichier, data))
+    {
+        int pos = data.find('x');
+        std::string byte = data.substr(pos + 1);
+        uint8_t byteint = std::stoi(data);
+        //v.push_back(byteint);
+        std::cout << byteint << std::endl;
+    }
+
+    //// deserialize it with CBOR
+    //json j = json::from_cbor(v);
+
+    //// Debug only : print the deserialized JSON value
+    //std::cout << std::setw(2) << j << std::endl;
+
+    return Model();
+    //return Model("name", vertices, indices, texture);
+}
+
+//Model Model::LoadModelFromBinary(const std::string& filepath)
+//{
+//    //// create byte vector
+//    //std::vector<std::uint8_t> v;
+//
+//    //std::ifstream fichier(filepath);
+//    //fichier >> v;
+//
+//    //json j = json::from_bson(v);
+//
+//    //// Debug only : print the deserialized JSON value 
+//    //std::cout << std::setw(2) << j << std::endl;
+//
+//    //return Model("name", vertices, indices, texture);
+//}

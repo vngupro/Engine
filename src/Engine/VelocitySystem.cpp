@@ -53,6 +53,6 @@ void VelocitySystem::Update(entt::registry& registry)
         auto& transform = transformView.get<Transform>(entity);
         auto& name = transformView.get<Name>(entity);
 
-        std::cout << "Entity " << name.name << " position : (" << transform.GetPosition() << std::endl;
+        //std::cout << "Entity " << name.name << " position : (" << transform.GetPosition() << std::endl;
     }
 }

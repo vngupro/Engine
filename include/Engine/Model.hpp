@@ -22,10 +22,14 @@ private:
 	std::shared_ptr<SDLppTexture> m_texture;
 	//std::string m_texture;
 public:
-	//Model();
+	Model();
 	Model(const std::string& name, const std::vector<SDL_Vertex>& vertices, const std::vector<int>& indices, const std::shared_ptr<SDLppTexture> texture);
 
 	void Draw(const SDLppRenderer& renderer, const Transform& transform);
-	void ExportToJson();
-	static Model LoadModel(const std::string& filepath);
+	json ExportToJson();
+	void ExportToCbor();
+	void ExportToBinary();
+	static Model LoadModelFromJson(const std::string& filepath);
+	static Model LoadModelFromCbor(const std::string& filepath);
+	//static Model LoadModelFromBinary(const std::string& filepath);
 };
