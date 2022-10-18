@@ -154,9 +154,11 @@ int main(int argc, char** argv)
     RenderSystem renderSystem;
     VelocitySystem velocitySystem;
 
-    Vector2f camOffset(500.0f, 10.0f);
+    Vector2f camOffset(-500.0f, 10.0f);
     Transform camTransform;
     camTransform.SetPosition(Vector2f(1280.f / 2 + camOffset.x, 720.f / 2 + camOffset.y));
+    camTransform.SetRotation(90);
+    camTransform.SetScale(Vector2f(0.5f, 0.5f));
     //camTransform.SetPosition(Vector2f(0.f, 0.f));
     CameraComponent camera(camTransform, 1280, 720);
     //return 0;

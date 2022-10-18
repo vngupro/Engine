@@ -66,9 +66,21 @@ void RenderSystem::Update(entt::registry& registry, SDLppRenderer& renderer, Cam
 		//std::cout << "viewport_max_y : " << viewport_max_y << std::endl;
 
 		//Vector2f pos(entityTransform.GetGlobalPosition().x - viewport_min_x, entityTransform.GetGlobalPosition().y -viewport_min_y);
-		Vector2f pos (entityTransform.GetPosition().x - viewport_min_x, entityTransform.GetPosition().y -viewport_min_y);
-		Transform transform = entityTransform;
+		Transform transform = entityTransform; // you want a copy to not change the transform
+		
+		float rot = camera.m_transform.GetRotation();
+		transform.SetRotation(entityTransform.GetRotation() - rot);
+
+		Vector2f pos (
+			entityTransform.GetPosition().x - viewport_min_x, 
+			entityTransform.GetPosition().y -viewport_min_y);
 		transform.SetPosition(pos);
+
+		Vector2f sca(
+			entityTransform.GetScale().x * 1 / camera.m_transform.GetScale().x, 
+			entityTransform.GetScale().y * 1 / camera.m_transform.GetScale().y);
+		transform.SetScale(sca);
+
 		entitySprite.Draw(renderer, transform);
 	}
 }
