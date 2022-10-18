@@ -127,7 +127,7 @@ int main(int argc, char** argv)
     house.ExportToCbor();
     house.ExportToBinary();
     Model house2 = Model::LoadModelFromJson("assets/house.model");
-    Model house3 = Model::LoadModelFromCbor("assets/house.cmodel");
+    //Model house3 = Model::LoadModelFromCbor("assets/house.cmodel");
     //Model house4 = Model::LoadModelFromBinary("assets/house.bmodel");
     
     // ENTT

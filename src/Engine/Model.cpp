@@ -6,6 +6,8 @@
 #include <Engine/SDLppTexture.hpp>
 #include <fstream>
 #include <iostream>
+#include <sstream>
+#include <bitset>
 
 Model::Model()
 {
@@ -68,7 +70,7 @@ void Model::ExportToCbor()
     std::ofstream fichier{ "assets/" + m_name + ".cmodel" };
     for (auto& byte : v)
     {
-        fichier << "0x" << std::hex << std::setw(2) << std::setfill('0') << (int)byte << std::endl;
+        fichier << "0x" << std::hex << std::setw(2) << std::setfill('0') << (int)byte << "\n";
     }
 }
 
@@ -89,7 +91,7 @@ void Model::ExportToBinary()
     std::ofstream fichier{ "assets/" + m_name + ".bmodel" };
     for (auto& byte : v)
     {
-        fichier << "0x" << std::hex << std::setw(2) << std::setfill('0') << (int)byte << std::endl;
+        fichier << "0x" << std::hex << std::setw(2) << std::setfill('0') << (int)byte << " ";
     }
 }
 
@@ -130,30 +132,49 @@ Model Model::LoadModelFromJson(const std::string& filepath)
     return Model("name", vertices, indices, texture);
 }
 
-Model Model::LoadModelFromCbor(const std::string& filepath)
-{
-    // create byte vector
-    std::vector<std::uint8_t> v;
-    std::ifstream fichier(filepath);
-    std::string data = "";
-    while (getline(fichier, data))
-    {
-        int pos = data.find('x');
-        std::string byte = data.substr(pos + 1);
-        uint8_t byteint = std::stoi(data);
-        //v.push_back(byteint);
-        std::cout << byteint << std::endl;
-    }
-
-    //// deserialize it with CBOR
-    //json j = json::from_cbor(v);
-
-    //// Debug only : print the deserialized JSON value
-    //std::cout << std::setw(2) << j << std::endl;
-
-    return Model();
-    //return Model("name", vertices, indices, texture);
-}
+//Model Model::LoadModelFromCbor(const std::string& filepath)
+//{
+//    // create byte vector
+//
+//    std::ifstream fichier(filepath);
+//    std::string data = "";
+//    //std::string data = "";
+//    //std::vector<std::uint8_t> v(data.begin(), data.end());
+//    //for (auto& byte : v)
+//    //{
+//    //    std::cout << "0x" << std::hex << std::setw(2) << std::setfill('0') << (int)byte << " ";
+//    //}
+//    while (getline(fichier, data))
+//    {
+//        
+//        std::vector<std::uint8_t> v(data.begin(), data.end());
+//        for (auto& byte : v)
+//        {
+//            std::cout << "0x" << std::hex << std::setw(2) << std::setfill('0') << (int)byte << " ";
+//        }
+//        //std::stringstream ss;
+//        //ss << std::hex << data;
+//        //std::cout << ss.str() << std::endl;
+//        //uint8_t n;
+//        //ss >> n;
+//        //std::cout << n << std::endl;
+//        //v.push_back(ss.str());
+//        //int pos = data.find('x');
+//        //std::string byte = data.substr(pos + 1);
+//        //int byteint = std::stoi(byte);
+//        //v.push_back(byteint);
+//        //std::cout << byteint << std::endl;
+//    }
+//
+//    //// deserialize it with CBOR
+//    //json j = json::from_cbor(v);
+//
+//    //// Debug only : print the deserialized JSON value
+//    //std::cout << std::setw(2) << j << std::endl;
+//
+//    return Model();
+//    //return Model("name", vertices, indices, texture);
+//}
 
 //Model Model::LoadModelFromBinary(const std::string& filepath)
 //{

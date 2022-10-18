@@ -30,6 +30,6 @@ public:
 	void ExportToCbor();
 	void ExportToBinary();
 	static Model LoadModelFromJson(const std::string& filepath);
-	static Model LoadModelFromCbor(const std::string& filepath);
+	//static Model LoadModelFromCbor(const std::string& filepath);
 	//static Model LoadModelFromBinary(const std::string& filepath);
 };
