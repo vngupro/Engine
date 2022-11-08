@@ -1,5 +1,5 @@
 #include <Engine/Transform.hpp>
-#include <Engine/Math.hpp>
+#include <algorithm>
 #include <cassert>
 
 Transform::Transform() :
@@ -134,22 +134,40 @@ void Transform::Translate(const Vector2f& translation)
 
 Vector2f Transform::TransformPoint(Vector2f position) const
 {
+	// L'ordre des transformations s'appelle ici le SRT et est très courant
+
+	// Scale
 	position *= GetGlobalScale();
 
-	float radRotation = Deg2Rad * GetGlobalRotation();
-	float s = std::sin(radRotation);
-	float c = std::cos(radRotation);
+	// Rotation
+	position = Vector2f::Rotate(position, GetGlobalRotation());
 
-	Vector2f rotatedVec;
-	rotatedVec.x = position.x * c - position.y * s;
-	rotatedVec.y = position.x * s + position.y * c;
-
+	// Translation
 	if (m_parent)
-		rotatedVec += m_parent->TransformPoint(m_position);
+		position += m_parent->TransformPoint(m_position);
 	else
-		rotatedVec += m_position;
+		position += m_position;
 
-	return rotatedVec;
+	return position;
+}
+
+Vector2f Transform::TransformInversePoint(Vector2f position) const
+{
+	// Lorsqu'on effectue l'inverse d'une transformation, l'ordre de celles-ci est également inversé, on fait alors du TRS
+
+	// Translation
+	if (m_parent)
+		position -= m_parent->TransformPoint(m_position);
+	else
+		position -= m_position;
+
+	// Rotation
+	position = Vector2f::Rotate(position, -GetGlobalRotation());
+
+	// Scale
+	position /= GetGlobalScale();
+
+	return position;
 }
 
 Transform& Transform::operator=(const Transform& transform)

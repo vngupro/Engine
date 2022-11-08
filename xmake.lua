@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
-add_requires("entt", "fmt", "libsdl", "libsdl_image", "nlohmann_json")
+add_requires("chipmunk2d", "entt", "fmt", "libsdl", "libsdl_image", "lz4", "nlohmann_json")
 add_requires("imgui", { configs = { sdl2 = true }})
 
 set_allowedarchs("windows|x64")
@@ -11,21 +11,27 @@ set_targetdir("bin/$(plat)_$(arch)_$(mode)") -- Le dossier de sortie des binaire
 
 set_languages("c++17")
 
+-- Désactivation de quelques warnings pas utiles dans notre cas avec VS
+if is_plat("windows") then
+    set_runtimes("MD")
+    add_cxflags("/wd4251") -- Disable warning: class needs to have dll-interface to be used by clients of class blah blah blah
+    add_cxflags("/wd4275") -- Disable warning: DLL-interface class 'class_1' used as base for DLL-interface blah
+end
+
 target("Engine")
     set_kind("shared")
     add_defines("ENGINE_BUILD")
     add_headerfiles("include/Engine/*.h", "include/Engine/*.hpp", "include/Engine/*.inl")
     add_includedirs("include", { public = true })
     add_files("src/Engine/**.cpp")
-    add_packages("libsdl", "nlohmann_json", "fmt", "entt", { public = true })
-    add_packages("libsdl_image")
+    add_packages("libsdl", "libsdl_image", "nlohmann_json", "fmt", "entt", "imgui", "chipmunk2d", { public = true })
+    add_packages("lz4")
 
 target("Game")
     set_kind("binary")
     add_deps("Engine")
     add_headerfiles("include/Game/*.h", "include/Game/*.hpp")
     add_files("src/Game/**.cpp")
-    add_packages("imgui")
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io

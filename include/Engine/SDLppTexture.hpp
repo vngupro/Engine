@@ -14,6 +14,7 @@ class ENGINE_API SDLppTexture
 		SDLppTexture(SDLppTexture&& texture) noexcept; // constructeur par mouvement
 		~SDLppTexture();
 
+		const std::string& GetFilepath() const;
 		SDL_Texture* GetHandle() const;
 		SDL_Rect GetRect() const;
 
@@ -24,7 +25,8 @@ class ENGINE_API SDLppTexture
 		static SDLppTexture LoadFromSurface(SDLppRenderer& renderer, const SDLppSurface& surface);
 
 	private:
-		SDLppTexture(SDL_Texture* texture);
+		SDLppTexture(SDL_Texture* texture, std::string filepath = "");
 
 		SDL_Texture* m_texture;
+		std::string m_filepath;
 };

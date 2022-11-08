@@ -14,6 +14,7 @@ class ENGINE_API SDLppSurface
 
 		void FillRect(const SDL_Rect& rect, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
+		const std::string& GetFilepath() const;
 		SDL_Surface* GetHandle() const;
 		Uint8* GetPixels();
 		const Uint8* GetPixels() const;
@@ -21,12 +22,13 @@ class ENGINE_API SDLppSurface
 		bool IsValid() const;
 
 		SDLppSurface& operator=(const SDLppSurface&) = delete; // opérateur d'assignation par copie
-		SDLppSurface& operator=(SDLppSurface&&) noexcept; // opérateur d'assignation par mouvement
+		SDLppSurface& operator=(SDLppSurface&& surface) noexcept; // opérateur d'assignation par mouvement
 
-		static SDLppSurface LoadFromFile(const std::string& filepath);
+		static SDLppSurface LoadFromFile(std::string filepath);
 
 	private:
-		SDLppSurface(SDL_Surface* surface);
+		SDLppSurface(SDL_Surface* surface, std::string filepath = "");
 
 		SDL_Surface* m_surface;
+		std::string m_filepath;
 };

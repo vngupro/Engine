@@ -3,7 +3,8 @@
 #include <Engine/Export.hpp>
 #include <SDL.h>
 #include <functional> //< std::function
-#include <unordered_map> //< std::unordered_map est plus efficace que std::map pour une association clé/valeur
+#include <string> //< std::string
+#include <unordered_map> //< std::unordered_map est plus efficace que std::map pour une association clÃ©/valeur
 
 enum class MouseButton
 {
@@ -22,25 +23,25 @@ class ENGINE_API InputManager
 		InputManager(InputManager&&) = delete;
 		~InputManager();
 
-		// Appuyer sur la touche "keyCode" déclenchera "action"
+		// Appuyer sur la touche "keyCode" dÃ©clenchera "action"
 		void BindKeyPressed(SDL_KeyCode keyCode, std::string action);
 
-		// Appuyer sur le bouton "button" déclenchera "action"
+		// Appuyer sur le bouton "button" dÃ©clenchera "action"
 		void BindMouseButtonPressed(MouseButton button, std::string action);
 
-		// Appuyer sur le bouton "button" du contrôleur (manette) déclenchera "action"
+		// Appuyer sur le bouton "button" du contrÃ´leur (manette) dÃ©clenchera "action"
 		void BindControllerButton(SDL_GameControllerButton button, std::string action);
 
-		// Réinitialise toutes les associations clavier/souris vers des actions
+		// RÃ©initialise toutes les associations clavier/souris vers des actions
 		void ClearBindings();
 
-		// Gère l'événement de la SDL et déclenche les actions associées, s'il y en a
+		// GÃ¨re l'Ã©vÃ©nement de la SDL et dÃ©clenche les actions associÃ©es, s'il y en a
 		void HandleEvent(const SDL_Event& event);
 
 		// Renvoie vrai si l'action est en cours
 		bool IsActive(const std::string& action) const;
 
-		// Lorsque l'action "action" se déclenche, on appellera "func"
+		// Lorsque l'action "action" se dÃ©clenche, on appellera "func"
 		void OnAction(std::string action, std::function<void(bool)> func);
 
 		InputManager& operator=(const InputManager&) = delete;

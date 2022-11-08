@@ -9,7 +9,8 @@ SDLppSurface::SDLppSurface(int width, int height)
 	m_surface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
 }
 
-SDLppSurface::SDLppSurface(SDLppSurface&& surface) noexcept
+SDLppSurface::SDLppSurface(SDLppSurface&& surface) noexcept :
+m_filepath(std::move(surface.m_filepath))
 {
 	m_surface = surface.m_surface;
 	surface.m_surface = nullptr;
@@ -25,6 +26,11 @@ void SDLppSurface::FillRect(const SDL_Rect& rect, Uint8 r, Uint8 g, Uint8 b, Uin
 {
 	assert(m_surface);
 	SDL_FillRect(m_surface, &rect, SDL_MapRGBA(m_surface->format, r, g, b, a));
+}
+
+const std::string& SDLppSurface::GetFilepath() const
+{
+	return m_filepath;
 }
 
 SDL_Surface* SDLppSurface::GetHandle() const
@@ -47,26 +53,30 @@ bool SDLppSurface::IsValid() const
 	return m_surface != nullptr;
 }
 
-SDLppSurface& SDLppSurface::operator=(SDLppSurface&& Surface) noexcept
+SDLppSurface& SDLppSurface::operator=(SDLppSurface&& surface) noexcept
 {
+	// Les classes peuvent être move directement
+	m_filepath = std::move(surface.m_filepath);
+
 	// On possède déjà potentiellement une Surface
 	// On la donne à Surface (qui va être détruit de toute façon)
 	// tout en volant son pointeur : on échange donc les pointeurs
 	// => std::swap
-	std::swap(m_surface, Surface.m_surface);
+	std::swap(m_surface, surface.m_surface);
 	return *this;
 }
 
-SDLppSurface SDLppSurface::LoadFromFile(const std::string& filepath)
+SDLppSurface SDLppSurface::LoadFromFile(std::string filepath)
 {
 	SDL_Surface* surface = IMG_Load(filepath.c_str());
 	if (!surface)
 		std::cerr << IMG_GetError() << std::endl;
 
-	return SDLppSurface(surface);
+	return SDLppSurface(surface, std::move(filepath));
 }
 
-SDLppSurface::SDLppSurface(SDL_Surface* surface) :
-m_surface(surface)
+SDLppSurface::SDLppSurface(SDL_Surface* surface, std::string filepath) :
+m_surface(surface),
+m_filepath(std::move(filepath))
 {
 }

@@ -1,30 +1,22 @@
-#include <Engine/VelocityComponent.h>
 #include <Engine/VelocitySystem.hpp>
+#include <Engine/VelocityComponent.hpp>
 #include <Engine/Transform.hpp>
-#include <iostream>
+#include <entt/entt.hpp>
 
-VelocitySystem::VelocitySystem()
+VelocitySystem::VelocitySystem(entt::registry& registry) :
+m_registry(registry)
 {
 }
 
-void VelocitySystem::Update(entt::registry& registry)
+void VelocitySystem::Update(float deltaTime)
 {
-    auto view = registry.view<Transform, Velocity>();
-    for (entt::entity entity : view)
-    {
-        auto& transform = view.get<Transform>(entity);
-        auto& velocity = view.get<Velocity>(entity);
+	auto view = m_registry.view<Transform, VelocityComponent>();
+	for (entt::entity entity : view)
+	{
+		Transform& entityTransform = view.get<Transform>(entity);
+		VelocityComponent& entityVelocity = view.get<VelocityComponent>(entity);
 
-        transform.Translate(Vector2f(velocity.x, velocity.y));
-    }
-
-    // For Debug purpose
-    //auto transformView = registry.view<Transform, Name>();
-    //for (entt::entity entity : transformView)
-    //{
-    //    auto& transform = transformView.get<Transform>(entity);
-    //    auto& name = transformView.get<Name>(entity);
-
-    //    std::cout << "Entity " << name.name << " position : (" << transform.GetPosition() << std::endl;
-    //}
+		entityTransform.Translate(entityVelocity.linearVel * deltaTime);
+		entityTransform.Rotate(entityVelocity.angularVel * deltaTime);
+	}
 }

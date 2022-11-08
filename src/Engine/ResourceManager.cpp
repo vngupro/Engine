@@ -1,4 +1,5 @@
 #include <Engine/ResourceManager.hpp>
+#include <Engine/Model.hpp>
 #include <Engine/SDLppSurface.hpp>
 #include <Engine/SDLppTexture.hpp>
 #include <stdexcept>
@@ -19,13 +20,38 @@ ResourceManager::~ResourceManager()
 
 void ResourceManager::Clear()
 {
+	m_missingModel.reset();
 	m_missingTexture.reset();
+	m_models.clear();
 	m_textures.clear();
+}
+
+const std::shared_ptr<Model>& ResourceManager::GetModel(const std::string& modelPath)
+{
+	// Avons-nous dÃ©jÃ  ce modÃ¨le en stock ?
+	auto it = m_models.find(modelPath);
+	if (it != m_models.end())
+		return it->second; // Oui, on peut le renvoyer
+
+	// Non, essayons de le charger
+	Model model = Model::LoadFromFile(modelPath);
+	if (!model.IsValid())
+	{
+		// On a pas pu charger le modÃ¨le, utilisons un modÃ¨le "manquant"
+		if (!m_missingModel)
+			m_missingModel = std::make_shared<Model>();
+
+		m_models.emplace(modelPath, m_missingModel);
+		return m_missingModel;
+	}
+
+	it = m_models.emplace(modelPath, std::make_shared<Model>(std::move(model))).first;
+	return it->second;
 }
 
 const std::shared_ptr<SDLppTexture>& ResourceManager::GetTexture(const std::string& texturePath)
 {
-	// Avons-nous déjà cette texture en stock ?
+	// Avons-nous dÃ©jÃ  cette texture en stock ?
 	auto it = m_textures.find(texturePath);
 	if (it != m_textures.end())
 		return it->second; // Oui, on peut la renvoyer
@@ -37,7 +63,7 @@ const std::shared_ptr<SDLppTexture>& ResourceManager::GetTexture(const std::stri
 		// On a pas pu charger la surface, utilisons une texture "manquante"
 		if (!m_missingTexture)
 		{
-			// On créé la texture la première fois qu'on en a besoin
+			// On crÃ©Ã© la texture la premiÃ¨re fois qu'on en a besoin
 			surface = SDLppSurface(64, 64);
 			surface.FillRect(SDL_Rect{ 0, 0, 16, 16 }, 255, 0, 255, 255);
 			surface.FillRect(SDL_Rect{ 16, 0, 16, 16 }, 0, 0, 0, 255);
@@ -47,40 +73,50 @@ const std::shared_ptr<SDLppTexture>& ResourceManager::GetTexture(const std::stri
 			m_missingTexture = std::make_shared<SDLppTexture>(SDLppTexture::LoadFromSurface(m_renderer, surface));
 		}
 		
-		// On enregistre cette texture comme une texture manquante (pour ne pas essayer de la charger à chaque fois)
+		// On enregistre cette texture comme une texture manquante (pour ne pas essayer de la charger Ã  chaque fois)
 		m_textures.emplace(texturePath, m_missingTexture);
 		return m_missingTexture;
 	}
 
-	// On a réussi à charger la surface, on la transforme en texture et on l'enregistre
+	// On a rÃ©ussi Ã  charger la surface, on la transforme en texture et on l'enregistre
 	std::shared_ptr<SDLppTexture> texture = std::make_shared<SDLppTexture>(SDLppTexture::LoadFromSurface(m_renderer, surface));
 
-	// .emplace et .insert renvoient un std::pair<iterator, bool>, le booléen indiquant si la texture a été insérée dans la map (ce qu'on sait déjà ici)
+	// .emplace et .insert renvoient un std::pair<iterator, bool>, le boolÃ©en indiquant si la texture a Ã©tÃ© insÃ©rÃ©e dans la map (ce qu'on sait dÃ©jÃ  ici)
 	it = m_textures.emplace(texturePath, std::move(texture)).first;
 
-	// Attention, on ne peut pas renvoyer texture directement (même sans std::move) car on renvoie une référence constante
-	// qui serait alors une référence constante sur une variable temporaire détruite à la fin de la fonction (texture)
+	// Attention, on ne peut pas renvoyer texture directement (mÃªme sans std::move) car on renvoie une rÃ©fÃ©rence constante
+	// qui serait alors une rÃ©fÃ©rence constante sur une variable temporaire dÃ©truite Ã  la fin de la fonction (texture)
 
 	return it->second;
 }
 
 void ResourceManager::Purge()
 {
-	// On va itérer sur le conteneur tout en enlevant certains éléments pendant l'itération, cela demande un peu de pratique
-	for (auto it = m_textures.begin(); it != m_textures.end(); ) //< pas d'incrémentation de it
+	// On va itÃ©rer sur le conteneur tout en enlevant certains Ã©lÃ©ments pendant l'itÃ©ration, cela demande un peu de pratique
+	for (auto it = m_textures.begin(); it != m_textures.end(); ) //< pas d'incrÃ©mentation de it
 	{
-		// On vérifie le compteur pour vérifier si la texture est utilisée ailleurs ou non
-		if (!it->second.unique())
+		// On vÃ©rifie le compteur pour vÃ©rifier si la texture est utilisÃ©e ailleurs ou non
+		if (it->second.use_count() > 1)
 		{
-			++it; // la texture est utilisée, on la garde et on passe à la suivante
+			++it; // la texture est utilisÃ©e, on la garde et on passe Ã  la suivante
 		}
 		else
 		{
-			// la texture n'est plus utilisée, on peut l'enlever avec .erase(it), qui renvoie un nouvel itérateur sur l'élément *suivant*
-			// (celui du prochain tour de boucle = pas d'incrémentation dans ce cas)
+			// la texture n'est plus utilisÃ©e, on peut l'enlever avec .erase(it), qui renvoie un nouvel itÃ©rateur sur l'Ã©lÃ©ment *suivant*
+			// (celui du prochain tour de boucle = pas d'incrÃ©mentation dans ce cas)
 			it = m_textures.erase(it);
 		}
 	}
+
+	// MÃªme chose pour les modÃ¨les
+	for (auto it = m_models.begin(); it != m_models.end(); )
+	{
+		if (it->second.use_count() > 1)
+			++it;
+		else
+			it = m_models.erase(it);
+	}
+
 }
 
 ResourceManager& ResourceManager::Instance()
@@ -89,14 +125,6 @@ ResourceManager& ResourceManager::Instance()
 		throw std::runtime_error("ResourceManager hasn't been instantied");
 
 	return *s_instance; 
-}
-
-std::string ResourceManager::GetPath(const std::shared_ptr<SDLppTexture>& texture)
-{
-	for (auto it = m_textures.begin(); it != m_textures.end(); ++it)
-		if (it->second == texture)
-			return it->first;
-	return "Path not found";
 }
 
 ResourceManager* ResourceManager::s_instance = nullptr;

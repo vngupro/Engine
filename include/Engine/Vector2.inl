@@ -1,4 +1,6 @@
-#include "Vector2.hpp"
+#include <Engine/Vector2.hpp>
+#include <Engine/Math.hpp>
+#include <cmath>
 // le #pragma once n'est pas nécessaire ici, un seul fichier va nous inclure directement et il est déjà protégé
 
 template<typename T>
@@ -103,6 +105,20 @@ Vector2<T>& Vector2<T>::operator/=(T value)
 	y /= value;
 
 	return *this;
+}
+
+template<typename T>
+Vector2<T> Vector2<T>::Rotate(const Vector2& vec, float degrees)
+{
+	float radRotation = Deg2Rad * degrees;
+	float s = std::sin(radRotation);
+	float c = std::cos(radRotation);
+
+	Vector2 rotatedVec;
+	rotatedVec.x = vec.x * c - vec.y * s;
+	rotatedVec.y = vec.x * s + vec.y * c;
+
+	return rotatedVec;
 }
 
 template<typename T>

@@ -2,6 +2,7 @@
 
 #include <Engine/Export.hpp>
 #include <SDL.h>
+#include <string_view>
 
 class SDLppTexture;
 class SDLppWindow;
@@ -9,7 +10,7 @@ class SDLppWindow;
 class ENGINE_API SDLppRenderer
 {
 	public:
-		SDLppRenderer(SDLppWindow& window);
+		SDLppRenderer(SDLppWindow& window, std::string_view rendererName = "", Uint32 flags = 0);
 		SDLppRenderer(const SDLppRenderer&) = delete; // constructeur par copie
 		SDLppRenderer(SDLppRenderer&& renderer) noexcept; // constructeur par mouvement
 		~SDLppRenderer();

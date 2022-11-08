@@ -1,270 +1,398 @@
 #include <iostream>
 #include <SDL.h>
+#include <Engine/AnimationSystem.hpp>
+#include <Engine/CameraComponent.hpp>
+#include <Engine/GraphicsComponent.hpp>
 #include <Engine/InputManager.hpp>
+#include <Engine/Model.hpp>
+#include <Engine/RenderSystem.hpp>
 #include <Engine/ResourceManager.hpp>
 #include <Engine/SDLpp.hpp>
-#include <Engine/SDLppWindow.hpp>
+#include <Engine/SDLppImGui.hpp>
 #include <Engine/SDLppRenderer.hpp>
 #include <Engine/SDLppTexture.hpp>
+#include <Engine/SDLppWindow.hpp>
 #include <Engine/Sprite.hpp>
+#include <Engine/SpritesheetComponent.hpp>
 #include <Engine/Transform.hpp>
-#include <Engine/Model.hpp>
+#include <Engine/VelocityComponent.hpp>
+#include <Engine/VelocitySystem.hpp>
+#include <chipmunk/chipmunk.h>
+#include <entt/entt.hpp>
+#include <fmt/core.h>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_sdlrenderer.h>
-#include <entt/entt.hpp>
-#include <Engine/VelocityComponent.h>
-#include <Engine/VelocitySystem.hpp>
-#include <Engine/RenderSystem.hpp>
-#include <Engine/CameraComponent.hpp>
-#include <Engine/Structure.hpp>
+#include <Engine/PhysicsSystem.hpp>
+#include <Engine/RigidbodyComponent.hpp>
+#include <Engine/Shape.hpp>
 
-int main(int argc, char** argv)
+entt::entity CreateBox(entt::registry& registry);
+entt::entity CreateCamera(entt::registry& registry);
+entt::entity CreateHouse(entt::registry& registry);
+entt::entity CreateRunner(entt::registry& registry, std::shared_ptr<Spritesheet> spritesheet);
+
+void EntityInspector(const char* windowName, entt::registry& registry, entt::entity entity);
+
+void HandleCameraMovement(entt::registry& registry, entt::entity camera, float deltaTime);
+void HandleRunnerMovement(entt::registry& registry, entt::entity runner, float deltaTime);
+
+struct InputComponent
 {
-    SDLpp sdl;
+	bool left = false;
+	bool right = false;
+	bool jump = false;
+};
 
-    SDLppWindow window("A4Engine", 1280, 720);
-    SDLppRenderer renderer(window);
+struct PlayerControlled {};
 
-    ResourceManager resourceManager(renderer);
-    InputManager inputManager;
-    
-    // HOUSE 
-    std::shared_ptr<SDLppTexture> houseTex = ResourceManager::Instance().GetTexture("assets/house1772x1920.png");
-    SDL_Rect houseTexRect = houseTex.get()->GetRect();
+struct PhysicsComponent
+{
+	cpBody* body;
+	cpShape* shape;
+};
 
-    Transform houseTransform;
-    houseTransform.SetPosition(Vector2f(150.f, 150.f));
-    
-    // for debug purpose only
-    //Sprite houseSprite(houseTex);
-    //houseSprite.Resize(houseTexRect.w / 10.f, houseTexRect.h / 10.f);
-    float houseW = houseTexRect.w / 10.f;
-    float houseH = houseTexRect.h / 10.f;
+void PlayerControllerSystem(entt::registry& registry)
+{
+	auto view = registry.view<PhysicsComponent, InputComponent>();
+	for (entt::entity entity : view)
+	{
+		auto& entityInput = view.get<InputComponent>(entity);
+		auto& entityPhysics = view.get<PhysicsComponent>(entity);
 
-    std::vector<SDL_Vertex> vertices;
-    std::vector<int> indices;
+		Vector2f velocity = Vector2f(0.f, 0.f);
+		if (entityInput.left)
+			velocity.x -= 500.f;
 
-    Vector2f topLeftCorner = houseTransform.TransformPoint(Vector2f(0.f, 0.f));
-    Vector2f topRightCorner = houseTransform.TransformPoint(Vector2f(houseW, 0.f));
-    Vector2f bottomLeftCorner = houseTransform.TransformPoint(Vector2f(0.f, houseH));
-    Vector2f bottomRightCorner = houseTransform.TransformPoint(Vector2f(houseW, houseH));
+		if (entityInput.right)
+			velocity.x += 500.f;
 
-    float offsetX = 0.18f;
-    float offsetY = 0.15f;
-    // the position of the vertices are going to be the width and height of the model
+		if (entityInput.jump)
+			cpBodyApplyImpulseAtWorldPoint(entityPhysics.body, cpv(0.f, -1000.f), cpBodyGetPosition(entityPhysics.body));
 
-    /*
-    *               0
-    *              / \
-    *             /   \
-    *            1_____2
-    *            |\    |
-    *            |  \  |
-    *            3____\4
-    */
-    SDL_Vertex vertex0
-    {
-        SDL_FPoint{ topLeftCorner.x + houseW / 2.f, topLeftCorner.y },
-        SDL_Color { 255, 255, 255, 255 },
-        SDL_FPoint{ 0.5f, 0.f }
-        //SDL_FPoint{ m_rect.x * invWidth, m_rect.y * invHeight } // I don't understand the formula
-    };
-    vertices.emplace_back(vertex0);
+		float velY = cpBodyGetVelocity(entityPhysics.body).y;
+		cpBodySetVelocity(entityPhysics.body, cpv(velocity.x, velY));
+	}
+}
 
-    SDL_Vertex vertex1
-    {
-        SDL_FPoint{ topLeftCorner.x, topLeftCorner.y + houseH / 2.f },
-        SDL_Color{ 255, 255, 255, 255 },
-        SDL_FPoint{ 0.f + offsetX, 0.5f }
-    };
-    //vertices[1].tex_coord = SDL_FPoint{ (m_rect.x + m_rect.w) * invWidth, m_rect.y * invHeight };
-    vertices.emplace_back(vertex1);
+void PlayerInputSystem(entt::registry& registry)
+{
+	auto view = registry.view<PlayerControlled, InputComponent>();
+	for (entt::entity entity : view)
+	{
+		auto& entityInput = view.get<InputComponent>(entity);
+		entityInput.left = InputManager::Instance().IsActive("MoveLeft");
+		entityInput.right = InputManager::Instance().IsActive("MoveRight");
+		entityInput.jump = InputManager::Instance().IsActive("Jump");
+	}
+}
 
-    SDL_Vertex vertex2
-    {
-        SDL_FPoint{ topRightCorner.x, topRightCorner.y + houseH / 2.f },
-        SDL_Color{ 255, 255, 255, 255 },
-        SDL_FPoint{ 1.f - offsetX, 0.5f }
-    };
-    vertices.emplace_back(vertex2);
+int main()
+{
+	SDLpp sdl;
 
-    SDL_Vertex vertex3
-    {
-        SDL_FPoint{ bottomLeftCorner.x, bottomLeftCorner.y },
-        SDL_Color{ 255, 255, 255, 255 },
-        SDL_FPoint{ 0.f + offsetX, 1.0f - offsetY }
-    };
-    vertices.emplace_back(vertex3);
+	SDLppWindow window("Engine", 1280, 720);
+	SDLppRenderer renderer(window, "", SDL_RENDERER_PRESENTVSYNC);
 
-    SDL_Vertex vertex4
-    {
-        SDL_FPoint{ bottomRightCorner.x, bottomRightCorner.y },
-        SDL_Color{ 255, 255, 255, 255 },
-        SDL_FPoint{ 1.f - offsetX, 1.f - offsetY}
-    };
-    vertices.emplace_back(vertex4);
+	ResourceManager resourceManager(renderer);
+	InputManager inputManager;
 
-    //vertices[2].tex_coord = SDL_FPoint{ m_rect.x * invWidth, (m_rect.y + m_rect.h) * invHeight };
-    //vertices[3].tex_coord = SDL_FPoint{ (m_rect.x + m_rect.w) * invWidth, (m_rect.y + m_rect.h) * invHeight };
+	SDLppImGui imgui(window, renderer);
 
-    indices = { 0, 1, 2, 1, 3, 4, 1, 4, 2 };
-    
-    Model house("house", vertices, indices, houseTex);
-    //house.ExportToJson();
-    house.ExportToCbor();
-    house.ExportToBinary();
-    Model house2 = Model::LoadModelFromJson("assets/house.model");
-    //Model house3 = Model::LoadModelFromCbor("assets/house.cmodel");
-    //Model house4 = Model::LoadModelFromBinary("assets/house.bmodel");
-    
-    // ENTT
-    // Sprite runner = player
-    std::shared_ptr<SDLppTexture> texture = ResourceManager::Instance().GetTexture("assets/runner.png");
+	// Si on initialise ImGui dans une DLL (ce que nous faisons avec la classe SDLppImGui) et l'utilisons dans un autre exécutable (DLL/.exe)
+	// la bibliothèque nous demande d'appeler ImGui::SetCurrentContext dans l'exécutable souhaitant utiliser ImGui, avec le contexte précédemment récupéré
+	// Ceci est parce qu'ImGui utilise des variables globales en interne qui ne sont pas partagées entre la .dll et l'exécutable (comme indiqué dans sa documentation)
+	ImGui::SetCurrentContext(imgui.GetContext());
 
-    Sprite sprite(texture);
-    sprite.Resize(256, 256);
-    sprite.SetRect(SDL_Rect{ 0, 0, 32, 32 });
+	// ZQSD
+	InputManager::Instance().BindKeyPressed(SDLK_q, "MoveLeft");
+	InputManager::Instance().BindKeyPressed(SDLK_d, "MoveRight");
+	InputManager::Instance().BindKeyPressed(SDLK_z, "MoveUp");
+	InputManager::Instance().BindKeyPressed(SDLK_s, "MoveDown");
 
-    Transform transform;
-    transform.SetPosition(Vector2f(150.f, 150.f));
-    
-    Transform transformParent;
-    transformParent.SetPosition(Vector2f(300.f, 100.f));
-    
-    transform.SetParent(&transformParent);
+	// Touches directionnelles (caméra)
+	InputManager::Instance().BindKeyPressed(SDLK_LEFT, "CameraMoveLeft");
+	InputManager::Instance().BindKeyPressed(SDLK_RIGHT, "CameraMoveRight");
+	InputManager::Instance().BindKeyPressed(SDLK_UP, "CameraMoveUp");
+	InputManager::Instance().BindKeyPressed(SDLK_DOWN, "CameraMoveDown");
 
-    entt::registry registry;
+	std::shared_ptr<Spritesheet> spriteSheet = std::make_shared<Spritesheet>();
+	spriteSheet->AddAnimation("idle", 5, 0.1f, Vector2i{ 0, 0 },  Vector2i{ 32, 32 });
+	spriteSheet->AddAnimation("run",  8, 0.1f, Vector2i{ 0, 32 }, Vector2i{ 32, 32 });
+	spriteSheet->AddAnimation("jump", 4, 0.1f, Vector2i{ 0, 64 }, Vector2i{ 32, 32 });
 
-    entt::entity player = registry.create();
-    {
-        auto& entityName = registry.emplace<Name>(player, "Player");
-        auto& entityTransform = registry.emplace<Transform>(player, transform);
-        auto& entitySprite = registry.emplace<Sprite>(player, sprite);
-    }
-    
-    entt::entity parent = registry.create();
-    {
-        auto& entityName = registry.emplace<Name>(parent, "Parent");
-        auto& entityTransform = registry.emplace<Transform>(parent, transformParent);
-        auto& entitySprite = registry.emplace<Sprite>(parent, sprite);
-        auto& entityVelocity = registry.emplace<Velocity>(parent, 0.f, 0.1f);
-    }
+	entt::registry registry;
 
-    RenderSystem renderSystem;
-    VelocitySystem velocitySystem;
+	AnimationSystem animSystem(registry);
+	RenderSystem renderSystem(renderer, registry);
+	VelocitySystem velocitySystem(registry);
 
-    Vector2f camOffset(10.0f, 10.0f);
-    Transform camTransform;
-    camTransform.SetPosition(Vector2f(1280.f / 2 + camOffset.x, 720.f / 2 + camOffset.y));
-    camTransform.SetRotation(90);
-    camTransform.SetScale(Vector2f(1.5f, 1.5f));
-    //camTransform.SetPosition(Vector2f(0.f, 0.f));
-    CameraComponent camera(camTransform, 1280, 720);
-    //return 0;
-    renderSystem.Update(registry, renderer, camera);
-    // Setup imgui
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
+	entt::entity cameraEntity = CreateCamera(registry);
 
-    ImGui::StyleColorsDark();
+	entt::entity house = CreateHouse(registry);
+	registry.get<Transform>(house).SetPosition({ 750.f, 275.f });
+	registry.get<Transform>(house).SetScale({ 2.f, 2.f });
 
-    ImGui_ImplSDL2_InitForSDLRenderer(window.GetHandle(), renderer.GetHandle());
-    ImGui_ImplSDLRenderer_Init(renderer.GetHandle());
+	entt::entity runner = CreateRunner(registry, spriteSheet);
+	registry.get<Transform>(runner).SetPosition({ 300.f, 250.f });
 
-    InputManager::Instance().BindKeyPressed(SDLK_d, "MoveRight");
+	entt::entity box = CreateBox(registry);
 
-    //std::shared_ptr<SDLppTexture> texture = ResourceManager::Instance().GetTexture("assets/runner.png");
+	Uint64 lastUpdate = SDL_GetPerformanceCounter();
 
-    Uint64 lastUpdate = SDL_GetPerformanceCounter();
+	InputManager::Instance().BindKeyPressed(SDL_KeyCode::SDLK_r, "PlayRun");
 
-    int frameIndex = 0;
-    int frameCount = 5;
-    float timer = 0.0f;
+	InputManager::Instance().OnAction("PlayRun", [&](bool pressed)
+	{
+		if (pressed)
+			registry.get<SpritesheetComponent>(runner).PlayAnimation("run");
+		else
+			registry.get<SpritesheetComponent>(runner).PlayAnimation("idle");
+	});
 
-    float scale = 1.f;
+	//cpSpace* space = cpSpaceNew();
+	//cpSpaceSetGravity(space, {0.f, 981.f});
+	//cpSpaceSetDamping(space, 0.5f);
+	PhysicsSystem physicsSystem(registry); //space({ 0.f, 981.f }, 0.5f);
 
-    bool isOpen = true;
+	entt::entity entity = registry.create();
+	auto& entityPhys = registry.emplace<RigidbodyComponent>(entity, 100.0f);
+	auto& entityTransform = registry.emplace<Transform>(entity);
+	entityPhys.SetPosition(Vector2f(20.f, 20.f));
 
-    float rotation = 10.f;
+	std::shared_ptr<Shape> shape = std::make_shared<CircleShape>(42.f);
+	entityPhys.AddShape(shape);
+	entityPhys.RemoveShape(shape);
 
-    while (isOpen)
-    {
-        Uint64 now = SDL_GetPerformanceCounter();
-        float deltaTime = (float) (now - lastUpdate) / SDL_GetPerformanceFrequency();
-        lastUpdate = now;
+	//cpBody* boxBody = cpBodyNew(100.f, cpMomentForBox(100.f, 256, 256));
+	//RigidbodyComponent boxBody(RigidbodyComponent::Dynamic, 100.0f, cpMomentForBox(100.f, 256, 256));
 
-        timer += deltaTime;
-        if (timer > 0.1f)
-        {
-            timer -= 0.1f;
-            frameIndex++;
-            if (frameIndex >= frameCount)
-                frameIndex = 0;  
+	//cpBodySetPosition(boxBody, cpv(400.f, 400.f));
+	//cpBodySetAngle(boxBody, 15.f * Rad2Deg);
+	//boxBody.SetPosition(cpv(400.f, 400.f));
+	//boxBody.SetRotation(15.f);
 
-            sprite.SetRect({ frameIndex * 32, 0, 32, 32 });
+	//cpShape* boxShape = cpBoxShapeNew(boxBody, 256, 256, 0.f);
+	//cpShapeGetCenterOfGravity(boxShape);
+	//cpSpaceAddShape(space, boxShape);
 
-            //std::cout << frameIndex << std::endl;
-        }
+	//cpBody* floorBody = cpBodyNewStatic();
 
-        SDL_Event event;
-        while (SDLpp::PollEvent(&event))
-        {
-            if (event.type == SDL_QUIT)
-                isOpen = false;
+	//cpShape* floorShape = cpSegmentShapeNew(floorBody, cpv(0.f, 720.f), cpv(10'000.f, 720.f), 0.f);
+	//cpSpaceAddShape(space, floorShape);
 
-            ImGui_ImplSDL2_ProcessEvent(&event);
+	//cpBody* playerBody = cpBodyNew(80.f, std::numeric_limits<float>::infinity());
+	//cpShape* playerShape = cpBoxShapeNew(playerBody, 128.f, 256.f, 0.f);
 
-            InputManager::Instance().HandleEvent(event);
-        }
+	//auto& playerPhysics = registry.get<PhysicsComponent>(runner);
+	//playerPhysics.body = playerBody;
+	//cpSpaceAddBody(space, playerPhysics.body);
 
-        // Start the Dear ImGui frame
-        ImGui_ImplSDLRenderer_NewFrame();
-        ImGui_ImplSDL2_NewFrame();
-        ImGui::NewFrame();
+	//playerPhysics.shape = playerShape;
+	//cpSpaceAddShape(space, playerPhysics.shape);
 
-        renderer.SetDrawColor(127, 0, 127, 255);
-        renderer.Clear();
+	InputManager::Instance().BindKeyPressed(SDLK_SPACE, "Jump");
 
+	// Rajoutez un InputComponent (contenant des booléens représentant les contrôles, left/right/jump)
+	// Rajoutez un VelocityComponent sur l'entité runner
+	// Rajoutez une fonction (system), qui modifie la vélocité en fonction de l'input
 
-        ImGui::Begin("Window");
+	// Pas de physique pour l'instant
 
-        if (ImGui::InputFloat("Rotation", &rotation, 0.1f, 0.5f))
-        {
-            transformParent.SetRotation(rotation);
-        }
+	float physicsTimestep = 1.f / 50.f;
+	float physicsAccumulator = 0.f;
 
-        ImGui::End();
+	bool isOpen = true;
+	while (isOpen)
+	{
+		Uint64 now = SDL_GetPerformanceCounter();
+		float deltaTime = (float) (now - lastUpdate) / SDL_GetPerformanceFrequency();
+		lastUpdate = now;
 
-        if (InputManager::Instance().IsActive("MoveRight"))
-        {
-            scale += 0.1f * deltaTime;
-            transformParent.SetScale(Vector2f(scale, scale));
-			//transformParent.Translate(Vector2f(500.f * deltaTime, 0.f));
-            //transformParent.Rotate(30.f * deltaTime);
-        }
+		fmt::print("FPS: {}\n", 1.f / deltaTime);
 
-        //houseSprite.Draw(renderer, houseTransform);
-        //sprite.Draw(renderer, transformParent);
-        //sprite.Draw(renderer, transform);
-        house2.Draw(renderer, transform);
+		SDL_Event event;
+		while (SDLpp::PollEvent(&event))
+		{
+			if (event.type == SDL_QUIT)
+				isOpen = false;
 
-        //renderSystem.Update(registry, renderer);
-        renderSystem.Update(registry, renderer, camera);
-        //velocitySystem.Update(registry);
+			imgui.ProcessEvent(event);
 
-		ImGui::Render();
-		ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+			InputManager::Instance().HandleEvent(event);
+		}
 
-        renderer.Present();
+		imgui.NewFrame();
+
+		renderer.SetDrawColor(127, 0, 127, 255);
+		renderer.Clear();
+
+		HandleCameraMovement(registry, cameraEntity, deltaTime);
+		//HandleRunnerMovement(registry, runner, deltaTime);
+
+		// Objectif : faire en sorte que la physique tourne à pas fixe (fixed delta time)
+		
+		physicsSystem.Update(deltaTime);
+		//physicsAccumulator += deltaTime;
+		//while (physicsAccumulator >= physicsTimestep)
+		//{
+		//	cpSpaceStep(space, physicsTimestep);
+		//	physicsAccumulator -= physicsTimestep;
+		//}
+
+		// Box
+		//cpVect position = cpBodyGetPosition(boxBody);
+		//float rotation = cpBodyGetAngle(boxBody) * Rad2Deg;		
+		//cpVect position = boxBody.GetPosition();
+		//float rotation = boxBody.GetAngle();
+
+		//registry.get<Transform>(box).SetPosition(Vector2f(position.x, position.y));
+		//registry.get<Transform>(box).SetRotation(rotation);
+
+		//// Player
+		//cpVect playerPos = cpBodyGetPosition(playerBody);
+		//float playerRot = cpBodyGetAngle(playerBody) * Rad2Deg;
+
+		//registry.get<Transform>(runner).SetPosition(Vector2f(playerPos.x, playerPos.y));
+		//registry.get<Transform>(box).SetRotation(playerRot);
+
+		animSystem.Update(deltaTime);
+		velocitySystem.Update(deltaTime);
+		renderSystem.Update(deltaTime);
+		physicsSystem.Update(deltaTime);
+		PlayerInputSystem(registry);
+		//PlayerControllerSystem(registry);
+
+		EntityInspector("Box", registry, box);
+		EntityInspector("Camera", registry, cameraEntity);
+		EntityInspector("Runner", registry, runner);
+
+		imgui.Render();
+
+		renderer.Present();
 	}
 
-    
-	// Cleanup
-	ImGui_ImplSDLRenderer_Shutdown();
-	ImGui_ImplSDL2_Shutdown();
-	ImGui::DestroyContext();
+	//cpSpaceRemoveShape(space, boxShape);
+	//cpShapeFree(boxShape);
 
-    return 0;
+	//cpSpaceRemoveBody(space, boxBody);
+	//cpBodyFree(boxBody);
+
+	//cpSpaceFree(space);
+
+	return 0;
+}
+
+void EntityInspector(const char* windowName, entt::registry& registry, entt::entity entity)
+{
+	Transform& transform = registry.get<Transform>(entity);
+
+	float rotation = transform.GetRotation();
+	Vector2f pos = transform.GetPosition();
+	Vector2f scale = transform.GetScale();
+
+	ImGui::Begin(windowName);
+
+	ImGui::LabelText("Position", "X: %f\nY: %f", pos.x, pos.y);
+
+	if (ImGui::SliderFloat("Rotation", &rotation, -180.f, 180.f))
+		transform.SetRotation(rotation);
+
+	float scaleVal[2] = { scale.x, scale.y };
+	if (ImGui::SliderFloat2("Scale", scaleVal, -5.f, 5.f))
+		transform.SetScale({ scaleVal[0], scaleVal[1] });
+
+	if (ImGui::Button("Reset"))
+	{
+		transform.SetScale({ 1.f, 1.f });
+		transform.SetRotation(0.f);
+		transform.SetPosition(Vector2f(0.f, 0.f));
+	}
+
+	ImGui::End();
+}
+
+entt::entity CreateBox(entt::registry& registry)
+{
+	std::shared_ptr<Sprite> box = std::make_shared<Sprite>(ResourceManager::Instance().GetTexture("assets/box.png"));
+	box->SetOrigin({ 0.5f, 0.5f });
+
+	entt::entity entity = registry.create();
+	registry.emplace<GraphicsComponent>(entity, std::move(box));
+	registry.emplace<Transform>(entity);
+
+
+	return entity;
+}
+
+entt::entity CreateCamera(entt::registry& registry)
+{
+	entt::entity entity = registry.create();
+	registry.emplace<CameraComponent>(entity);
+	registry.emplace<Transform>(entity);
+
+	return entity;
+}
+
+entt::entity CreateHouse(entt::registry& registry)
+{
+	std::shared_ptr<Model> house = ResourceManager::Instance().GetModel("assets/house.model");
+
+	entt::entity entity = registry.create();
+	registry.emplace<GraphicsComponent>(entity, std::move(house));
+	registry.emplace<Transform>(entity);
+
+	return entity;
+}
+
+entt::entity CreateRunner(entt::registry& registry, std::shared_ptr<Spritesheet> spritesheet)
+{
+	std::shared_ptr<Sprite> sprite = std::make_shared<Sprite>(ResourceManager::Instance().GetTexture("assets/runner.png"));
+	sprite->SetOrigin({ 0.5f, 0.5f });
+	sprite->Resize(256, 256);
+	sprite->SetRect(SDL_Rect{ 0, 0, 32, 32 });
+
+	entt::entity entity = registry.create();
+	registry.emplace<SpritesheetComponent>(entity, spritesheet, sprite);
+	registry.emplace<GraphicsComponent>(entity, std::move(sprite));
+	registry.emplace<Transform>(entity);
+	registry.emplace<InputComponent>(entity);
+	registry.emplace<PhysicsComponent>(entity);
+	registry.emplace<PlayerControlled>(entity);
+
+	return entity;
+}
+
+void HandleCameraMovement(entt::registry& registry, entt::entity camera, float deltaTime)
+{
+	Transform& cameraTransform = registry.get<Transform>(camera);
+
+	if (InputManager::Instance().IsActive("CameraMoveDown"))
+		cameraTransform.Translate(Vector2f(0.f, 500.f * deltaTime));
+
+	if (InputManager::Instance().IsActive("CameraMoveLeft"))
+		cameraTransform.Translate(Vector2f(-500.f * deltaTime, 0.f));
+
+	if (InputManager::Instance().IsActive("CameraMoveRight"))
+		cameraTransform.Translate(Vector2f(500.f * deltaTime, 0.f));
+
+	if (InputManager::Instance().IsActive("CameraMoveUp"))
+		cameraTransform.Translate(Vector2f(0.f, -500.f * deltaTime));
+}
+
+void HandleRunnerMovement(entt::registry& registry, entt::entity runner, float deltaTime)
+{
+	Transform& transform = registry.get<Transform>(runner);
+
+	if (InputManager::Instance().IsActive("MoveDown"))
+		transform.Translate(Vector2f(0.f, 500.f * deltaTime));
+
+	if (InputManager::Instance().IsActive("MoveLeft"))
+		transform.Translate(Vector2f(-500.f * deltaTime, 0.f));
+
+	if (InputManager::Instance().IsActive("MoveRight"))
+		transform.Translate(Vector2f(500.f * deltaTime, 0.f));
+
+	if (InputManager::Instance().IsActive("MoveUp"))
+		transform.Translate(Vector2f(0.f, -500.f * deltaTime));
 }

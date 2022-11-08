@@ -4,7 +4,8 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
-SDLppTexture::SDLppTexture(SDLppTexture&& texture) noexcept
+SDLppTexture::SDLppTexture(SDLppTexture&& texture) noexcept :
+m_filepath(std::move(texture.m_filepath))
 {
 	m_texture = texture.m_texture;
 	texture.m_texture = nullptr;
@@ -14,6 +15,11 @@ SDLppTexture::~SDLppTexture()
 {
 	if (m_texture)
 		SDL_DestroyTexture(m_texture);
+}
+
+const std::string& SDLppTexture::GetFilepath() const
+{
+	return m_filepath;
 }
 
 SDL_Texture* SDLppTexture::GetHandle() const
@@ -33,9 +39,12 @@ SDL_Rect SDLppTexture::GetRect() const
 
 SDLppTexture& SDLppTexture::operator=(SDLppTexture&& texture) noexcept
 {
-	// On possède déjà potentiellement une texture
-	// On la donne à texture (qui va être détruit de toute façon)
-	// tout en volant son pointeur : on échange donc les pointeurs
+	// Les classes peuvent Ãªtre move directement
+	m_filepath = std::move(texture.m_filepath);
+
+	// On possÃ¨de dÃ©jÃ  potentiellement une texture
+	// On la donne Ã  texture (qui va Ãªtre dÃ©truit de toute faÃ§on)
+	// tout en volant son pointeur : on Ã©change donc les pointeurs
 	// => std::swap
 	std::swap(m_texture, texture.m_texture);
 	return *this;
@@ -49,10 +58,11 @@ SDLppTexture SDLppTexture::LoadFromFile(SDLppRenderer& renderer, const std::stri
 SDLppTexture SDLppTexture::LoadFromSurface(SDLppRenderer& renderer, const SDLppSurface& surface)
 {
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer.GetHandle(), surface.GetHandle());
-	return SDLppTexture(texture);
+	return SDLppTexture(texture, surface.GetFilepath());
 }
 
-SDLppTexture::SDLppTexture(SDL_Texture* texture) :
-m_texture(texture)
+SDLppTexture::SDLppTexture(SDL_Texture* texture, std::string filepath) :
+m_texture(texture),
+m_filepath(std::move(filepath))
 {
 }

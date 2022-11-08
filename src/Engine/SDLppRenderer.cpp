@@ -3,9 +3,21 @@
 #include <Engine/SDLppWindow.hpp>
 #include <SDL.h>
 
-SDLppRenderer::SDLppRenderer(SDLppWindow& window)
+SDLppRenderer::SDLppRenderer(SDLppWindow& window, std::string_view rendererName, Uint32 flags)
 {
-	m_renderer = SDL_CreateRenderer(window.GetHandle(), 0, 0);
+	int choosenDriver = -1;
+
+	int numDrivers = SDL_GetNumRenderDrivers();
+	for (int i = 0; i < numDrivers; ++i)
+	{
+		SDL_RendererInfo info;
+		SDL_GetRenderDriverInfo(i, &info);
+
+		if (info.name == rendererName)
+			choosenDriver = i;
+	}
+
+	m_renderer = SDL_CreateRenderer(window.GetHandle(), choosenDriver, flags);
 }
 
 SDLppRenderer::SDLppRenderer(SDLppRenderer&& renderer) noexcept

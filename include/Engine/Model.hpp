@@ -1,35 +1,59 @@
 #pragma once
 
+#include <Engine/Color.hpp>
 #include <Engine/Export.hpp>
+#include <Engine/Renderable.hpp>
+#include <Engine/Vector2.hpp>
+#include <nlohmann/json_fwd.hpp> //< header spécial qui fait des déclarations anticipées des classes de la lib
 #include <SDL.h>
-#include <vector>
+#include <filesystem>
 #include <memory>
-//#include <Engine/SDLppTexture.hpp> // why error incomplete type ??
-#include <nlohmann/json.hpp>
-
-using json = nlohmann::json;
+#include <vector>
 
 class SDLppRenderer;
-class Transform;
 class SDLppTexture;
+class Transform;
 
-class ENGINE_API Model
+struct ModelVertex
 {
-private:
-	std::string m_name;
-	std::vector<SDL_Vertex> m_vertices;
-	std::vector<int> m_indices;
-	std::shared_ptr<SDLppTexture> m_texture;
-	//std::string m_texture;
-public:
-	Model();
-	Model(const std::string& name, const std::vector<SDL_Vertex>& vertices, const std::vector<int>& indices, const std::shared_ptr<SDLppTexture> texture);
+	Vector2f pos;
+	Vector2f uv;
+	Color color;
+};
 
-	void Draw(const SDLppRenderer& renderer, const Transform& transform);
-	json ExportToJson();
-	void ExportToCbor();
-	void ExportToBinary();
-	static Model LoadModelFromJson(const std::string& filepath);
-	//static Model LoadModelFromCbor(const std::string& filepath);
-	//static Model LoadModelFromBinary(const std::string& filepath);
+class ENGINE_API Model : public Renderable // Un ensemble de triangles
+{
+	public:
+		Model() = default;
+		Model(std::shared_ptr<const SDLppTexture> texture, std::vector<ModelVertex> vertices, std::vector<int> indices);
+		Model(const Model&) = default;
+		Model(Model&&) = default;
+		~Model() = default;
+
+		void Draw(SDLppRenderer& renderer, const Transform& cameraTransform, const Transform& transform) override;
+
+		bool IsValid() const;
+
+		bool SaveToFile(const std::filesystem::path& filepath) const;
+		nlohmann::ordered_json SaveToJSon() const;
+
+		Model& operator=(const Model&) = delete;
+		Model& operator=(Model&&) = default;
+
+		static Model LoadFromFile(const std::filesystem::path& filepath);
+		static Model LoadFromJSon(const nlohmann::json& doc);
+
+	private:
+		bool SaveToFileRegular(const std::filesystem::path& filepath) const;
+		bool SaveToFileCompressed(const std::filesystem::path& filepath) const;
+		bool SaveToFileBinary(const std::filesystem::path& filepath) const;
+
+		static Model LoadFromFileRegular(const std::filesystem::path& filepath);
+		static Model LoadFromFileCompressed(const std::filesystem::path& filepath);
+		static Model LoadFromFileBinary(const std::filesystem::path& filepath);
+
+		std::shared_ptr<const SDLppTexture> m_texture;
+		std::vector<ModelVertex> m_vertices;
+		std::vector<SDL_Vertex> m_sdlVertices;
+		std::vector<int> m_indices;
 };

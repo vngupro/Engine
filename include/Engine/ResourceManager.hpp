@@ -2,8 +2,10 @@
 
 #include <Engine/Export.hpp>
 #include <memory> //< std::shared_ptr
-#include <unordered_map> //< std::unordered_map est plus efficace que std::map pour une association clé/valeur
+#include <string> //< std::string
+#include <unordered_map> //< std::unordered_map est plus efficace que std::map pour une association clï¿½/valeur
 
+class Model;
 class SDLppRenderer;
 class SDLppTexture;
 
@@ -17,17 +19,20 @@ class ENGINE_API ResourceManager
 
 		void Clear();
 
+		const std::shared_ptr<Model>& GetModel(const std::string& texturePath);
 		const std::shared_ptr<SDLppTexture>& GetTexture(const std::string& texturePath);
 
 		void Purge();
-		std::string GetPath(const std::shared_ptr<SDLppTexture>&);
+
 		static ResourceManager& Instance();
 
 		ResourceManager& operator=(const ResourceManager&) = delete;
 		ResourceManager& operator=(ResourceManager&&) = delete;
 
 	private:
+		std::shared_ptr<Model> m_missingModel;
 		std::shared_ptr<SDLppTexture> m_missingTexture;
+		std::unordered_map<std::string /*texturePath*/, std::shared_ptr<Model>> m_models;
 		std::unordered_map<std::string /*texturePath*/, std::shared_ptr<SDLppTexture>> m_textures;
 		SDLppRenderer& m_renderer;
 

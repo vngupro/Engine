@@ -24,7 +24,7 @@ void InputManager::BindKeyPressed(SDL_KeyCode keyCode, std::string action)
 
 void InputManager::BindMouseButtonPressed(MouseButton button, std::string action)
 {
-	// Plutôt que de traduire depuis notre enum vers les defines de la SDL à chaque événement
+	// PlutÃ´t que de traduire depuis notre enum vers les defines de la SDL Ã  chaque Ã©vÃ©nement
 	// on peut le faire une seule fois au binding (plus efficace)
 	int mouseButton;
 	switch (button)
@@ -144,7 +144,7 @@ InputManager::ActionData& InputManager::GetActionData(const std::string& action)
 		return it->second;
 	else
 	{
-		ActionData& actionData = m_actions[std::move(action)];
+		ActionData& actionData = m_actions[action];
 		actionData.isActive = false;
 
 		return actionData;

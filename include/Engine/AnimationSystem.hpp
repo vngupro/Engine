@@ -3,16 +3,13 @@
 #include <Engine/Export.hpp>
 #include <entt/fwd.hpp> //< header spécial qui fait des déclarations anticipées des classes de la lib
 
-class SDLppRenderer;
-
-class ENGINE_API RenderSystem
+class ENGINE_API AnimationSystem
 {
 	public:
-		RenderSystem(SDLppRenderer& renderer, entt::registry& registry);
+		AnimationSystem(entt::registry& registry);
 
 		void Update(float deltaTime);
 
 	private:
-		SDLppRenderer& m_renderer;
 		entt::registry& m_registry;
 };

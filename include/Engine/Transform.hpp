@@ -33,6 +33,7 @@ class ENGINE_API Transform
 		void Translate(const Vector2f& translation);
 
 		Vector2f TransformPoint(Vector2f position) const;
+		Vector2f TransformInversePoint(Vector2f position) const;
 
 		Transform& operator=(const Transform&);
 		Transform& operator=(Transform&&) noexcept;
