@@ -21,6 +21,8 @@ public:
 	void SetDamping(cpFloat damping);
 	void AddBody(cpBody* body);
 	void AddShape(cpShape* shape);
+	void RemoveBody(cpBody* body);
+	void RemoveShape(cpShape* shape);
 	void Update(float deltaTime);
 	static PhysicsSystem& Instance();
 	//static void AddToSpace(std::shared_ptr<Shape> shape);

@@ -66,7 +66,8 @@ void PhysicsSystem::SetDamping(cpFloat damping)
 
 void PhysicsSystem::AddBody(cpBody* body)
 {
-	cpSpaceAddBody(m_space, body);
+	if(m_space && body)
+		cpSpaceAddBody(m_space, body);
 }
 
 void PhysicsSystem::AddShape(cpShape* shape)
@@ -75,6 +76,17 @@ void PhysicsSystem::AddShape(cpShape* shape)
 		cpSpaceAddShape(m_space, shape);
 }
 
+void PhysicsSystem::RemoveBody(cpBody* body)
+{
+	if(m_space && body)
+		cpSpaceRemoveBody(m_space, body);
+}
+
+void PhysicsSystem::RemoveShape(cpShape* shape)
+{
+	if(m_space && shape)
+		cpSpaceRemoveShape(m_space, shape);
+}
 
 
 void PhysicsSystem::Update(float deltaTime)
