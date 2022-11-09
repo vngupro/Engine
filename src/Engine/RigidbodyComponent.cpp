@@ -27,6 +27,7 @@ RigidbodyComponent::RigidbodyComponent()
 RigidbodyComponent::RigidbodyComponent(float mass)
 {
 	m_body = cpBodyNew(mass, 0);
+	m_mass = mass;
 }
 
 RigidbodyComponent::~RigidbodyComponent()
@@ -69,10 +70,15 @@ cpFloat RigidbodyComponent::GetAngle()
 
 void RigidbodyComponent::AddShape(std::shared_ptr<Shape> shape)
 {
-	m_shapes.emplace_back(shape);
-	float ma = 0.f;
 	shape.get()->CreateShape(m_body);
-	//failed idk why
+	m_shapes.emplace_back(shape);
+	float angularMoment = 0.f;
+	for (int i = 0; i < m_shapes.size(); i++)
+	{
+		angularMoment += shape.get()->GetAngularMoment(m_mass);
+	}
+
+	//failed idk why ????????????
 	//PhysicsSystem::Instance().AddShape(shape.get()->GetHandle());
 }
 
