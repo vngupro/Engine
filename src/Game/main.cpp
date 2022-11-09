@@ -202,7 +202,6 @@ int main()
 	//cpSpaceSetGravity(space, {0.f, 981.f});
 	//cpSpaceSetDamping(space, 0.5f);
 	PhysicsSystem physicsSystem(registry); //space({ 0.f, 981.f }, 0.5f);
-
 	entt::entity entity = registry.create();
 	auto& entityPhys = registry.emplace<RigidbodyComponent>(entity, 100.0f);
 	auto& entityTransform = registry.emplace<Transform>(entity);

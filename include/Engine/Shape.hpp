@@ -10,6 +10,7 @@ public:
 	~Shape();
 
 	virtual void CreateShape(cpBody* body);
+	virtual float GetAngularMoment(float mass);
 	cpShape* GetHandle();
 
 protected:
@@ -23,6 +24,8 @@ public:
 	~BoxShape();
 
 	 void CreateShape(cpBody* body) override;
+	 float GetAngularMoment(float mass) override;
+
 private:
 	float m_width;
 	float m_height;
@@ -36,6 +39,8 @@ public:
 	~CircleShape();
 
 	void CreateShape(cpBody* body) override;
+	float GetAngularMoment(float mass) override;
+
 private:
 	float m_radius;
 	Vector2f m_offset;
@@ -48,6 +53,8 @@ public:
 	~SegmentShape();
 
 	void CreateShape(cpBody* body) override;
+	float GetAngularMoment(float mass) override;
+
 ;private:
 	Vector2f m_a;
 	Vector2f m_b;

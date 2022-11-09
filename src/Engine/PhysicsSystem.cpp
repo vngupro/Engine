@@ -1,6 +1,8 @@
 #include <Engine/PhysicsSystem.hpp>
 #include <stdexcept>
 #include<Engine/Shape.hpp>
+#include<Engine/RigidbodyComponent.hpp>
+#include<Engine/Transform.hpp>
 //#include <chipmunk/chipmunk.h>
 
 PhysicsSystem* PhysicsSystem::s_instance = nullptr;
@@ -27,6 +29,14 @@ PhysicsSystem::~PhysicsSystem()
 	}
 
 	s_instance = nullptr;
+}
+
+PhysicsSystem& PhysicsSystem::Instance()
+{
+	if (!s_instance)
+		throw std::runtime_error("InputManager hasn't been instantied");
+
+	return *s_instance;
 }
 
 cpSpace* PhysicsSystem::GetHandle()
@@ -61,17 +71,14 @@ void PhysicsSystem::AddBody(cpBody* body)
 
 void PhysicsSystem::AddShape(cpShape* shape)
 {
-	cpSpaceAddShape(m_space, shape);
+	if(m_space && shape)
+		cpSpaceAddShape(m_space, shape);
 }
 
-PhysicsSystem* PhysicsSystem::Instance()
-{
-	return s_instance;
-}
+
 
 void PhysicsSystem::Update(float deltaTime)
 {
-
 	m_physicsAccumulator += deltaTime;
 	while (m_physicsAccumulator >= m_physicsTimestep)
 	{
@@ -79,29 +86,17 @@ void PhysicsSystem::Update(float deltaTime)
 		m_physicsAccumulator -= m_physicsTimestep;
 	}
 
-// Boxl
-//cpVect position = cpBodyGetPosition(boxBody);
-//float rotation = cpBodyGetAngle(boxBody) * Rad2Deg;		
-//cpVect position = boxBody.GetPosition();
-//float rotation = boxBody.GetAngle();
+	auto view = m_registry.view<RigidbodyComponent, Transform>();
 
-//registry.get<Transform>(box).SetPosition(Vector2f(position.x, position.y));
-//registry.get<Transform>(box).SetRotation(rotation);
+	for (auto& entity : view)
+	{
+		auto& entityRigidBody = view.get<RigidbodyComponent>(entity);
+		auto& entityTransform = view.get<Transform>(entity);
 
-//// Player
-//cpVect playerPos = cpBodyGetPosition(playerBody);
-//float playerRot = cpBodyGetAngle(playerBody) * Rad2Deg;
+		cpVect pos = entityRigidBody.GetPosition();
+		float rot = entityRigidBody.GetAngle() * Rad2Deg;
 
-//registry.get<Transform>(runner).SetPosition(Vector2f(playerPos.x, playerPos.y));
-//registry.get<Transform>(box).SetRotation(playerRot);
+		entityTransform.SetPosition(Vector2f(pos.x, pos.y));
+		entityTransform.SetRotation(rot);
+	}
 }
-
-//void PhysicsSystem::AddToSpace(std::shared_ptr<Shape> shape)
-//{
-//	s_instance->AddToSpace_Impl(shape);
-//}
-//
-//void PhysicsSystem::AddToSpace_Impl(std::shared_ptr<Shape> shape)
-//{
-//	cpSpaceAddShape(m_space, shape.get()->GetHandle());
-//}

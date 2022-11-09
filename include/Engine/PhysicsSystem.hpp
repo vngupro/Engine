@@ -22,7 +22,7 @@ public:
 	void AddBody(cpBody* body);
 	void AddShape(cpShape* shape);
 	void Update(float deltaTime);
-	static PhysicsSystem* Instance();
+	static PhysicsSystem& Instance();
 	//static void AddToSpace(std::shared_ptr<Shape> shape);
 
 private:

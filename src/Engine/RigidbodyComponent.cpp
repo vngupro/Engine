@@ -1,7 +1,7 @@
 #include <Engine/RigidbodyComponent.hpp>
 #include <Engine/Math.hpp>
 #include <Engine/Shape.hpp>
-//#include <Engine/PhysicsSystem.hpp>
+#include <Engine/PhysicsSystem.hpp>
 //RigidbodyComponent::RigidbodyComponent(RigidbodyType bodyType, cpFloat mass /*= 100.f*/, cpFloat moment /*= cpMomentForBox(100.f, 256, 256)*/)
 //{
 //	switch (bodyType)
@@ -70,7 +70,10 @@ cpFloat RigidbodyComponent::GetAngle()
 void RigidbodyComponent::AddShape(std::shared_ptr<Shape> shape)
 {
 	m_shapes.emplace_back(shape);
-	//PhysicsSystem::AddToSpace(shape);
+	float ma = 0.f;
+	shape.get()->CreateShape(m_body);
+	//failed idk why
+	//PhysicsSystem::Instance().AddShape(shape.get()->GetHandle());
 }
 
 void RigidbodyComponent::RemoveShape(std::shared_ptr<Shape> shape)
