@@ -3,14 +3,16 @@
 #include<Engine/Shape.hpp>
 //#include <chipmunk/chipmunk.h>
 
+PhysicsSystem* PhysicsSystem::s_instance = nullptr;
+
 PhysicsSystem::PhysicsSystem(entt::registry& registry) :
 	m_registry(registry)
 {
 
-	//if (s_instance != nullptr)
-	//	throw std::runtime_error("only one Physics system can be created");
+	if (s_instance != nullptr)
+		throw std::runtime_error("only one Physics system can be created");
 
-	//s_instance = this;
+	s_instance = this;
 
 	m_space = cpSpaceNew();
 	cpSpaceSetGravity(m_space, { 0.f, 981.f });
@@ -24,7 +26,7 @@ PhysicsSystem::~PhysicsSystem()
 		cpSpaceFree(m_space);
 	}
 
-	//s_instance = nullptr;
+	s_instance = nullptr;
 }
 
 cpSpace* PhysicsSystem::GetHandle()
@@ -57,14 +59,41 @@ void PhysicsSystem::AddBody(cpBody* body)
 	cpSpaceAddBody(m_space, body);
 }
 
+void PhysicsSystem::AddShape(cpShape* shape)
+{
+	cpSpaceAddShape(m_space, shape);
+}
+
+PhysicsSystem* PhysicsSystem::Instance()
+{
+	return s_instance;
+}
+
 void PhysicsSystem::Update(float deltaTime)
 {
+
 	m_physicsAccumulator += deltaTime;
 	while (m_physicsAccumulator >= m_physicsTimestep)
 	{
 		cpSpaceStep(m_space, m_physicsTimestep);
 		m_physicsAccumulator -= m_physicsTimestep;
 	}
+
+// Boxl
+//cpVect position = cpBodyGetPosition(boxBody);
+//float rotation = cpBodyGetAngle(boxBody) * Rad2Deg;		
+//cpVect position = boxBody.GetPosition();
+//float rotation = boxBody.GetAngle();
+
+//registry.get<Transform>(box).SetPosition(Vector2f(position.x, position.y));
+//registry.get<Transform>(box).SetRotation(rotation);
+
+//// Player
+//cpVect playerPos = cpBodyGetPosition(playerBody);
+//float playerRot = cpBodyGetAngle(playerBody) * Rad2Deg;
+
+//registry.get<Transform>(runner).SetPosition(Vector2f(playerPos.x, playerPos.y));
+//registry.get<Transform>(box).SetRotation(playerRot);
 }
 
 //void PhysicsSystem::AddToSpace(std::shared_ptr<Shape> shape)

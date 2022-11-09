@@ -26,6 +26,7 @@
 #include <Engine/PhysicsSystem.hpp>
 #include <Engine/RigidbodyComponent.hpp>
 #include <Engine/Shape.hpp>
+#include <Engine/Matrix3.hpp>
 
 entt::entity CreateBox(entt::registry& registry);
 entt::entity CreateCamera(entt::registry& registry);
@@ -89,6 +90,53 @@ void PlayerInputSystem(entt::registry& registry)
 
 int main()
 {
+	// Matrix
+	float m[3][3] =
+	{
+		{1, 2, 3},
+		{4, 5, 6},
+		{7, 8, 9}
+	};
+
+	Matrix3 m0 (m);
+	m0.Print();
+	fmt::print("\n{}\n", m0(1, 1));
+	m0(1, 1) = 0;
+	fmt::print("{}\n", m0(1, 1));
+
+	auto d = Matrix3::Determinant(m0.GetDataAsVector());
+	fmt::print("\n{}\n", d);
+
+	// failed
+	//auto i = m0.Inverse(); 
+	//fmt::print("\n");
+	//i.Print();
+
+	Vector2f v(3.0f, 7.0f);
+	fmt::print("\n");
+	Matrix3 m1 = m0 * v;
+	m1.Print();
+
+	Vector2f vecTra(1.0f, 0.0f);
+	Matrix3 traMat = Matrix3::Translate(Vector2f(5.0f, 3.0f));
+	fmt::print("\n");
+	traMat = traMat * vecTra;
+	traMat.Print();
+
+	Vector2 vecRot(1.0f, 4.0f);
+	Matrix3 rotMat = Matrix3::Rotate(90);
+	fmt::print("\n");
+	rotMat = rotMat * vecRot;
+	rotMat.Print();
+
+	Vector2f vecSca(2, 1);
+	Matrix3 scaMat = Matrix3::Scale(Vector2f(0.5f, 2));
+	fmt::print("\n");
+	scaMat = scaMat * vecSca;
+	scaMat.Print();
+
+	//return 0;
+
 	SDLpp sdl;
 
 	SDLppWindow window("Engine", 1280, 720);
@@ -264,8 +312,8 @@ int main()
 		//PlayerControllerSystem(registry);
 
 		EntityInspector("Box", registry, box);
-		EntityInspector("Camera", registry, cameraEntity);
-		EntityInspector("Runner", registry, runner);
+		//EntityInspector("Camera", registry, cameraEntity);
+		//EntityInspector("Runner", registry, runner);
 
 		imgui.Render();
 

@@ -9,7 +9,7 @@ public:
 	Shape();
 	~Shape();
 
-	//virtual void CreateShape();
+	virtual void CreateShape(cpBody* body);
 	cpShape* GetHandle();
 
 protected:
@@ -19,36 +19,37 @@ protected:
 class ENGINE_API BoxShape : public Shape
 {
 public:
-	BoxShape();
+	BoxShape(float width, float height, float radius = 1.0f);
 	~BoxShape();
 
-	 //void CreateShape() override;
+	 void CreateShape(cpBody* body) override;
 private:
 	float m_width;
 	float m_height;
+	float m_radius;
 };
 
 class ENGINE_API CircleShape : public Shape
 {
 public:
-	CircleShape(float radius);
+	CircleShape(float radius, Vector2f offset = Vector2f(0.f, 0.f));
 	~CircleShape();
 
-	//void CreateShape() override;
+	void CreateShape(cpBody* body) override;
 private:
 	float m_radius;
-	Vector2f offset;
+	Vector2f m_offset;
 };
 
 class ENGINE_API SegmentShape : public Shape
 {
 public:
-	SegmentShape();
+	SegmentShape(Vector2f a, Vector2f b, float radius);
 	~SegmentShape();
 
-	//void CreateShape() override;
+	void CreateShape(cpBody* body) override;
 ;private:
-	Vector2f a;
-	Vector2f b;
-	float radius;
+	Vector2f m_a;
+	Vector2f m_b;
+	float m_radius;
 };

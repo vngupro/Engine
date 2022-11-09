@@ -20,7 +20,9 @@ public:
 	void SetGravity(const cpVect& gravity);
 	void SetDamping(cpFloat damping);
 	void AddBody(cpBody* body);
+	void AddShape(cpShape* shape);
 	void Update(float deltaTime);
+	static PhysicsSystem* Instance();
 	//static void AddToSpace(std::shared_ptr<Shape> shape);
 
 private:
@@ -30,5 +32,5 @@ private:
 	float m_physicsAccumulator = 0.f;
 
 	//void AddToSpace_Impl(std::shared_ptr<Shape> shape);
-	//static PhysicsSystem* s_instance;
+	static PhysicsSystem* s_instance;
 };
