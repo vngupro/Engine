@@ -72,10 +72,9 @@ void RigidbodyComponent::AddShape(std::shared_ptr<Shape> shape)
 {
 	shape.get()->CreateShape(m_body);
 	m_shapes.emplace_back(shape);
-	float angularMoment = 0.f;
 	for (int i = 0; i < m_shapes.size(); i++)
 	{
-		angularMoment += shape.get()->GetAngularMoment(m_mass);
+		m_angular_moment += shape.get()->GetAngularMoment(m_mass);
 	}
 
 	//failed idk why ????????????

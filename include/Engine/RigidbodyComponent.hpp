@@ -27,4 +27,5 @@ private:
 	cpBody* m_body;
 	std::vector<std::shared_ptr<Shape>> m_shapes;
 	float m_mass;
+	float m_angular_moment;
 };
