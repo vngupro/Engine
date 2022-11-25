@@ -52,6 +52,11 @@ struct InputComponent
 	bool left = false;
 	bool right = false;
 	bool jump = false;
+	bool up = false;
+	bool down = false;
+	bool fire = false;
+	bool rotateRight = false;
+	bool rotateLeft = false;
 };
 
 struct PlayerControlled {};
@@ -65,7 +70,7 @@ void PlayerControllerSystem(entt::registry& registry)
 		auto& entityPhysics = view.get<RigidBodyComponent>(entity);
 
 		Vector2f velocity = Vector2f(0.f, 0.f);
-		velocity.y = entityPhysics.GetLinearVelocity().y;
+		//velocity.y = entityPhysics.GetLinearVelocity().y;
 
 		if (entityInput.left)
 			velocity.x -= 500.f;
@@ -76,7 +81,22 @@ void PlayerControllerSystem(entt::registry& registry)
 		if (entityInput.jump && velocity.y < 1.f)
 			velocity.y = -500.f;
 
+		if (entityInput.up)
+			velocity.y = -500.f;
+
+		if (entityInput.down)
+			velocity.y = 500.f;
+		
+		float angle = 0.f;
+		
+		if (entityInput.rotateLeft)
+			angle += 400.f;
+
+		if (entityInput.rotateRight)
+			angle -= 400.0f;
+
 		entityPhysics.SetLinearVelocity(velocity);
+		entityPhysics.SetAngularVelocity(angle);
 	}
 }
 
@@ -89,6 +109,11 @@ void PlayerInputSystem(entt::registry& registry)
 		entityInput.left = InputManager::Instance().IsActive("MoveLeft");
 		entityInput.right = InputManager::Instance().IsActive("MoveRight");
 		entityInput.jump = InputManager::Instance().IsActive("Jump");
+		entityInput.up = InputManager::Instance().IsActive("MoveUp");
+		entityInput.down = InputManager::Instance().IsActive("MoveDown");
+		entityInput.fire = InputManager::Instance().IsActive("Fire");
+		entityInput.rotateRight = InputManager::Instance().IsActive("RotateRight");
+		entityInput.rotateLeft = InputManager::Instance().IsActive("RotateLeft");
 	}
 }
 
@@ -164,6 +189,7 @@ int main()
 		HandleCameraMovement(registry, cameraEntity, deltaTime);
 		HandlePlayerMovement(registry, playerEntity, deltaTime);
 
+		// System Update
 		animSystem.Update(deltaTime);
 		velocitySystem.Update(deltaTime);
 		physicsSystem.Update(deltaTime);
@@ -460,59 +486,59 @@ void HandleCameraMovement(entt::registry& registry, entt::entity camera, float d
 void HandlePlayerMovement(entt::registry& registry, entt::entity player, float deltaTime)
 {
 	Transform& transform = registry.get<Transform>(player);
-	RigidBodyComponent& rb = registry.get<RigidBodyComponent>(player);
 
-	//if (InputManager::Instance().IsActive("MoveDown"))
-	//	transform.Translate(Vector2f(0.f, 500.f * deltaTime));
+	if (InputManager::Instance().IsActive("MoveDown"))
+		transform.Translate(Vector2f(0.f, 500.f * deltaTime));
 
-	//if (InputManager::Instance().IsActive("MoveLeft"))
-	//	transform.Translate(Vector2f(-500.f * deltaTime, 0.f));
+	if (InputManager::Instance().IsActive("MoveLeft"))
+		transform.Translate(Vector2f(-500.f * deltaTime, 0.f));
 
-	//if (InputManager::Instance().IsActive("MoveRight"))
-	//	transform.Translate(Vector2f(500.f * deltaTime, 0.f));
+	if (InputManager::Instance().IsActive("MoveRight"))
+		transform.Translate(Vector2f(500.f * deltaTime, 0.f));
 
-	//if (InputManager::Instance().IsActive("MoveUp"))
-	//	transform.Translate(Vector2f(0.f, -500.f * deltaTime));
+	if (InputManager::Instance().IsActive("MoveUp"))
+		transform.Translate(Vector2f(0.f, -500.f * deltaTime));
 
-	//if (InputManager::Instance().IsActive("RotateRight"))
-	//	transform.Rotate(5.0f);
+	if (InputManager::Instance().IsActive("RotateRight"))
+		transform.Rotate(50.f * deltaTime);
 
-	//if (InputManager::Instance().IsActive("RotateLeft"))
-	//	transform.Rotate(-5.0f);
+	if (InputManager::Instance().IsActive("RotateLeft"))
+		transform.Rotate(-50.f * deltaTime);
 	
 	//if (InputManager::Instance().IsActive("Fire"))
 	//	CreateBullet();
 
+	//RigidBodyComponent& rb = registry.get<RigidBodyComponent>(player);
 
-	if (InputManager::Instance().IsActive("MoveDown"))
-		rb.SetLinearVelocity(Vector2f(0.f, 50000.f * deltaTime));
+	//if (InputManager::Instance().IsActive("MoveDown"))
+	//	rb.SetLinearVelocity(Vector2f(0.f, 50000.f * deltaTime));
 
-	if (InputManager::Instance().IsActive("MoveLeft"))
-		rb.SetLinearVelocity(Vector2f(-50000.f * deltaTime, 0.f));
+	//if (InputManager::Instance().IsActive("MoveLeft"))
+	//	rb.SetLinearVelocity(Vector2f(-50000.f * deltaTime, 0.f));
 
-	if (InputManager::Instance().IsActive("MoveRight"))
-		rb.SetLinearVelocity(Vector2f(50000.f * deltaTime, 0.f));
+	//if (InputManager::Instance().IsActive("MoveRight"))
+	//	rb.SetLinearVelocity(Vector2f(50000.f * deltaTime, 0.f));
 
-	if (InputManager::Instance().IsActive("MoveUp"))
-		rb.SetLinearVelocity(Vector2f(0.f, -50000.f * deltaTime));
+	//if (InputManager::Instance().IsActive("MoveUp"))
+	//	rb.SetLinearVelocity(Vector2f(0.f, -50000.f * deltaTime));
 
-	if(
-		!InputManager::Instance().IsActive("MoveDown") && 
-		!InputManager::Instance().IsActive("MoveLeft") && 
-		!InputManager::Instance().IsActive("MoveRight") && 
-		!InputManager::Instance().IsActive("MoveUp")
-	  )
-		rb.SetLinearVelocity(Vector2f(0.f, 0.f));
+	//if(
+	//	!InputManager::Instance().IsActive("MoveDown") && 
+	//	!InputManager::Instance().IsActive("MoveLeft") && 
+	//	!InputManager::Instance().IsActive("MoveRight") && 
+	//	!InputManager::Instance().IsActive("MoveUp")
+	//  )
+	//	rb.SetLinearVelocity(Vector2f(0.f, 0.f));
 
-	if (InputManager::Instance().IsActive("RotateRight"))
-		rb.SetAngularVelocity(400.f);
+	//if (InputManager::Instance().IsActive("RotateRight"))
+	//	rb.SetAngularVelocity(400.f);
 
-	if (InputManager::Instance().IsActive("RotateLeft"))
-		rb.SetAngularVelocity(-400.f);
+	//if (InputManager::Instance().IsActive("RotateLeft"))
+	//	rb.SetAngularVelocity(-400.f);
 
-	if (
-		!InputManager::Instance().IsActive("RotateRight") &&
-		!InputManager::Instance().IsActive("RotateLeft")
-	   )
-		rb.SetAngularVelocity(0.f);
+	//if (
+	//	!InputManager::Instance().IsActive("RotateRight") &&
+	//	!InputManager::Instance().IsActive("RotateLeft")
+	//   )
+	//	rb.SetAngularVelocity(0.f);
 }
