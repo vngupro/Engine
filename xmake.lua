@@ -39,7 +39,7 @@ target("A4Test")
     add_deps("A4Engine")
     add_headerfiles("include/A4Test/*.h", "include/A4Test/*.hpp")
     add_files("src/A4Test/**.cpp")
-    add_packages("openal-soft", "dr_wav")
+    --add_packages("openal-soft", "dr_wav")
 
 target("A43D")
     set_kind("binary")

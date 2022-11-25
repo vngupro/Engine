@@ -35,6 +35,11 @@
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_sdlrenderer.h>
+#include <AL/al.h>
+#include <AL/alc.h>
+//#include <dr_wav.h>
+#include <../src/A4Engine/DrWavDefine.cpp>
+
 
 
 entt::entity CreateBox(entt::registry& registry, std::shared_ptr<CollisionShape> shape);
@@ -120,6 +125,21 @@ void PlayerInputSystem(entt::registry& registry)
 	}
 }
 
+std::string GetError(int err)
+{
+	switch (err)
+	{
+	case AL_NO_ERROR: return "AL_NO_ERROR";
+	case ALC_INVALID_DEVICE: return "AL_INVALID_DEVICE";
+	case ALC_INVALID_CONTEXT: return "AL_INVALID_CONTEXT";
+	//case AL_INVALID_ENUM: return "AL_INVALID_ENUM";
+	case AL_INVALID_VALUE: return "AL_INVALID_VALUE";
+	case AL_OUT_OF_MEMORY: return "AL_OUT_OF_MEMORY";
+	}
+
+	return "unknown error";
+}
+
 int main()
 {
 	// Initialization
@@ -140,7 +160,67 @@ int main()
 	RenderSystem renderSystem(renderer, registry);
 	VelocitySystem velocitySystem(registry);
 	PhysicsSystem physicsSystem(registry);
-	AudioSystem audioSystem(registry);
+
+	// Audio
+	// Marche Pas
+	//AudioSystem audioSystem(registry);
+	
+	//std::shared_ptr<Audio> audio = ResourceManager::Instance().GetAudio("assets/siren.wav");
+	//audio.get()->Play();
+
+	// Marche
+	const char* deviceList = alcGetString(nullptr, ALC_ALL_DEVICES_SPECIFIER);
+	std::vector<std::string> devices;
+	while (true)
+	{
+		std::size_t length = std::strlen(deviceList);
+		if (length == 0)
+			break;
+
+		devices.emplace_back(deviceList, length);
+
+		deviceList += length + 1;
+	}
+
+	ALCdevice* device = alcOpenDevice(devices[0].c_str());
+	//std::cout << alGetError() << std::endl;
+	//std::cout << alcGetError(device) << std::endl;
+	//std::cout << GetError(alGetError()) << std::endl;
+	ALCcontext* context = alcCreateContext(device, nullptr);
+	//std::cout << alGetError() << std::endl;
+	//std::cout << GetError(alGetError()) << std::endl;
+	alcMakeContextCurrent(context);
+	//std::cout << GetError(alGetError()) << std::endl;
+
+	ALuint buffer;
+	alGenBuffers(1, &buffer);
+
+	ALuint source;
+	alGenSources(1, &source);
+	alSourcei(source, AL_LOOPING, AL_TRUE);
+
+	drwav wav;
+	if (!drwav_init_file(&wav, "assets/siren.wav", nullptr))
+	{
+		std::cout << "failed to load file" << std::endl;
+		return 0;
+	}
+
+	std::vector<std::int16_t> samples(wav.totalPCMFrameCount * wav.channels);
+	drwav_read_pcm_frames_s16(&wav, wav.totalPCMFrameCount, samples.data());
+
+	alBufferData(buffer,
+		(wav.channels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
+		samples.data(),
+		samples.size() * sizeof(std::int16_t),
+		wav.sampleRate);
+
+	drwav_uninit(&wav);
+	alSourcei(source, AL_BUFFER, buffer);
+
+	//alListener3f(AL_POSITION, 640.f / 100.f, 360.f / 100.f, 0.f);
+
+	alSourcePlay(source);
 
 	// Player Input
 	InputManager::Instance().BindKeyPressed(SDLK_q, "MoveLeft");
@@ -198,6 +278,7 @@ int main()
 		velocitySystem.Update(deltaTime);
 		physicsSystem.Update(deltaTime);
 		renderSystem.Update(deltaTime);
+		//audioSystem.Update(deltaTime);
 
 		PlayerInputSystem(registry);
 		PlayerControllerSystem(registry);
@@ -205,7 +286,7 @@ int main()
 		ImGui::LabelText("FPS", "%f", 1.f / deltaTime);
 
 		EntityInspector("Camera", registry, cameraEntity);
-
+		
 		physicsSystem.DebugDraw(renderer, registry.get<Transform>(cameraEntity).GetTransformMatrix().Inverse());
 		imgui.Render();
 		renderer.Present();

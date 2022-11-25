@@ -3,14 +3,15 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <string>
-
+#include <A4Engine/Vector2.hpp>
 
 class A4ENGINE_API Audio
 {
 public:
 	Audio();
 	Audio(const Audio&) = default;
-	Audio(Audio&&) = default;
+	Audio(Audio&&) noexcept;
+	//Audio(Audio&&);
 	~Audio();
 
 	static Audio LoadAudioFromFile(const std::string& audioPath);
@@ -19,42 +20,15 @@ public:
 	//static Audio LoadMp3FromFile(const std::string& audioPath);
 
 	bool IsValid() const;
+	void Play(Vector2f position = Vector2f(0, 0), Vector2f = Vector2f(0, 0));
 	
-private:
+public:
 	ALuint m_buffer;
 	ALuint m_source;
 
 	bool isValid;
 };
 
-//// On va faire des trucs !
-//drwav wav;
-//if (!drwav_init_file(&wav, "assets/siren.wav", nullptr))
-//{
-//	std::cout << "failed to load file" << std::endl;
-//	return 0;
-//}
-//
-//std::vector<std::int16_t> samples(wav.totalPCMFrameCount * wav.channels);
-//drwav_read_pcm_frames_s16(&wav, wav.totalPCMFrameCount, samples.data());
-//
-//ALuint buffer;
-//alGenBuffers(1, &buffer);
-//
-//alBufferData(buffer,
-//	(wav.channels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
-//	samples.data(),
-//	samples.size() * sizeof(std::int16_t),
-//	wav.sampleRate);
-//
-//drwav_uninit(&wav);
-//
-//ALuint source;
-//alGenSources(1, &source);
-//
-//alSourcei(source, AL_BUFFER, buffer);
-//alSourcei(source, AL_LOOPING, AL_TRUE);
-//
 //alListener3f(AL_POSITION, 640.f / 100.f, 360.f / 100.f, 0.f);
 //
 //alSourcePlay(source);
