@@ -29,6 +29,7 @@
 #include <A4Engine/VelocitySystem.hpp>
 #include <A4Engine/AudioSystem.hpp>
 #include <A4Engine/Audio.hpp>
+#include <A4Engine/AudioComponent.hpp>
 #include <chipmunk/chipmunk.h>
 #include <entt/entt.hpp>
 #include <fmt/core.h>
@@ -38,7 +39,7 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 //#include <dr_wav.h>
-#include <../src/A4Engine/DrWavDefine.cpp>
+//#include <../src/A4Engine/DrWavDefine.cpp>
 
 
 
@@ -163,10 +164,7 @@ int main()
 
 
 	AudioSystem audioSystem(registry);
-	std::shared_ptr<Audio> audio = ResourceManager::Instance().GetAudio("assets/siren.wav");
-	//audioSystem.Play(audio);
-	audio->Play();
-	//audio.get()->Play();
+	//audio->Play();
 	
 	// Player Input
 	InputManager::Instance().BindKeyPressed(SDLK_q, "MoveLeft");
@@ -224,7 +222,7 @@ int main()
 		velocitySystem.Update(deltaTime);
 		physicsSystem.Update(deltaTime);
 		renderSystem.Update(deltaTime);
-		//audioSystem.Update(deltaTime);
+		audioSystem.Update(deltaTime);
 
 		PlayerInputSystem(registry);
 		PlayerControllerSystem(registry);
@@ -469,12 +467,15 @@ entt::entity CreatePlayer(entt::registry& registry)
 	sprite->SetOrigin({ 0.5f, 0.5f });
 
 	std::shared_ptr<CollisionShape> collider = std::make_shared<CircleShape>(16.f);
+	std::shared_ptr<Audio> audio = ResourceManager::Instance().GetAudio("assets/siren.wav");
 
 	entt::entity entity = registry.create();
 	registry.emplace<GraphicsComponent>(entity, std::move(sprite));
 	registry.emplace<Transform>(entity);
 	registry.emplace<InputComponent>(entity);
 	registry.emplace<PlayerControlled>(entity);
+	registry.emplace<Audio>(entity, std::move(*audio.get()));
+	//registry.emplace<Audio>(entity, audio);
 
 	auto& entityBody = registry.emplace<RigidBodyComponent>(entity, RigidBodyComponent::Kinematic{});
 	entityBody.AddShape(collider, Vector2f(0.f, 0.f));

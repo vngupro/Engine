@@ -100,11 +100,11 @@ void Audio::Play(Vector2f position /* = Vector2f(0, 0)*/, Vector2f velocity /* =
 {
 	alSourcei(m_source, AL_BUFFER, m_buffer);
 	alSourcei(m_source, AL_LOOPING, AL_TRUE);
-	//alListener3f(AL_POSITION, position.x, position.y, 0.f);
+	alListener3f(AL_POSITION, position.x, position.y, 0.f);
 	alSourcePlay(m_source);
 
-	//alSource3f(m_source, AL_POSITION, position.x / 100.f, position.y / 100.f, 0.f);
-	//alSource3f(m_source, AL_VELOCITY, velocity.x / 100.f, velocity.y / 100.f, 0.f);
+	alSource3f(m_source, AL_POSITION, position.x / 100.f, position.y / 100.f, 0.f);
+	alSource3f(m_source, AL_VELOCITY, velocity.x / 100.f, velocity.y / 100.f, 0.f);
 }
 
 ALuint Audio::GetBuffer() const
@@ -115,4 +115,15 @@ ALuint Audio::GetBuffer() const
 ALuint Audio::GetSource() const
 {
 	return m_source;
+}
+
+Audio& Audio::operator=(Audio&& audio) noexcept
+{
+	m_buffer = audio.m_buffer;
+	m_source = audio.m_source;
+	isValid = audio.isValid;
+	audio.m_source = 0;
+	audio.m_buffer = 0;
+
+	return *this;
 }

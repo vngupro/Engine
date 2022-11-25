@@ -17,8 +17,8 @@ public:
 	std::string GetError(int err);
 
 	ALCcontext* GetContext() const;
-	void Play(std::shared_ptr<Audio> audio);
-	//void Update(float deltaTime);
+	ALCdevice* GetDevice() const;
+	void Update(float deltaTime);
 
 private:
 	ALCdevice* m_device;

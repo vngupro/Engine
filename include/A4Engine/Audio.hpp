@@ -13,6 +13,9 @@ public:
 	Audio(Audio&&) noexcept;
 	~Audio();
 
+	Audio& operator=(const Audio&) = delete;
+	Audio& operator=(Audio&&) noexcept;
+
 	static Audio LoadAudioFromFile(const std::string& audioPath);
 	static bool LoadWavFromFile(const std::string& audioPath, Audio& outAudio);
 	//static Audio LoadOggFromFile(const std::string& audioPath);
@@ -42,11 +45,8 @@ public:
 //
 //while (isOpen)
 //{
-//
+//		Vector2f ambulancePos = ambulanceTransform.GetGlobalPosition();
+//		Vector2f velocity = (ambulancePos - oldPosition) / deltaTime;
 //	alSource3f(source, AL_POSITION, ambulancePos.x / 100.f, ambulancePos.y / 100.f, 0.f);
 //	alSource3f(source, AL_VELOCITY, velocity.x / 100.f, velocity.y / 100.f, 0.f);
 //}
-//
-//// Libération
-//alDeleteSources(1, &source);
-//alDeleteBuffers(1, &buffer);
