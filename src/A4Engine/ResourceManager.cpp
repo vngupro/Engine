@@ -2,7 +2,8 @@
 #include <A4Engine/Model.hpp>
 #include <A4Engine/SDLppSurface.hpp>
 #include <A4Engine/SDLppTexture.hpp>
-#include <stdexcept>
+#include <A4Engine/Audio.hpp>
+
 
 ResourceManager::ResourceManager(SDLppRenderer& renderer) :
 m_renderer(renderer)
@@ -117,6 +118,15 @@ void ResourceManager::Purge()
 			it = m_models.erase(it);
 	}
 
+	// Même chose pour les audios
+	for (auto it = m_audios.begin(); it != m_audios.end(); )
+	{
+		if (it->second.use_count() > 1)
+			++it;
+		else
+			it = m_audios.erase(it);
+	}
+
 }
 
 ResourceManager& ResourceManager::Instance()
@@ -125,6 +135,28 @@ ResourceManager& ResourceManager::Instance()
 		throw std::runtime_error("ResourceManager hasn't been instantied");
 
 	return *s_instance; 
+}
+
+const std::shared_ptr<Audio>& ResourceManager::GetAudio(const std::string& audioPath)
+{
+	auto it = m_audios.find(audioPath);
+	if (it != m_audios.end())
+		return it->second; // Oui, on peut le renvoyer
+
+	Audio audio = Audio::LoadAudioFromFile(audioPath);
+
+	if (!audio.IsValid())
+	{
+		// On a pas pu charger l'audio, utilisons un audio "manquant"
+		if (!m_missingAudio)
+			m_missingAudio = std::make_shared<Audio>();
+
+		m_audios.emplace(audioPath, m_missingAudio);
+		return m_missingAudio;
+	}
+
+	it = m_audios.emplace(audioPath, std::make_shared<Audio>(std::move(audio))).first;
+	return it->second;
 }
 
 ResourceManager* ResourceManager::s_instance = nullptr;

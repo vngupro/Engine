@@ -27,12 +27,15 @@
 #include <A4Engine/Transform.hpp>
 #include <A4Engine/VelocityComponent.hpp>
 #include <A4Engine/VelocitySystem.hpp>
+#include <A4Engine/AudioSystem.hpp>
+#include <A4Engine/Audio.hpp>
 #include <chipmunk/chipmunk.h>
 #include <entt/entt.hpp>
 #include <fmt/core.h>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_sdlrenderer.h>
+
 
 entt::entity CreateBox(entt::registry& registry, std::shared_ptr<CollisionShape> shape);
 entt::entity CreateCamera(entt::registry& registry);
@@ -137,6 +140,7 @@ int main()
 	RenderSystem renderSystem(renderer, registry);
 	VelocitySystem velocitySystem(registry);
 	PhysicsSystem physicsSystem(registry);
+	AudioSystem audioSystem(registry);
 
 	// Player Input
 	InputManager::Instance().BindKeyPressed(SDLK_q, "MoveLeft");
