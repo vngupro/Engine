@@ -2,6 +2,7 @@ add_rules("mode.debug", "mode.release")
 
 add_requires("chipmunk2d", "entt", "fmt", "libsdl", "libsdl_image", "lz4", "nlohmann_json")
 add_requires("imgui", { configs = { sdl2 = true }})
+add_requires("openal-soft", "dr_wav", "glew")
 
 set_allowedarchs("windows|x64")
 set_warnings("allextra")
@@ -18,21 +19,34 @@ if is_plat("windows") then
     add_cxflags("/wd4275") -- Disable warning: DLL-interface class 'class_1' used as base for DLL-interface blah
 end
 
-target("Engine")
+target("A4Engine")
     set_kind("shared")
-    add_defines("ENGINE_BUILD")
-    add_headerfiles("include/Engine/*.h", "include/Engine/*.hpp", "include/Engine/*.inl")
+    add_defines("A4ENGINE_BUILD")
+    add_headerfiles("include/A4Engine/*.h", "include/A4Engine/*.hpp", "include/A4Engine/*.inl")
     add_includedirs("include", { public = true })
-    add_files("src/Engine/**.cpp")
+    add_files("src/A4Engine/**.cpp")
     add_packages("libsdl", "libsdl_image", "nlohmann_json", "fmt", "entt", "imgui", "chipmunk2d", { public = true })
     add_packages("lz4")
 
-target("Game")
+target("A4Game")
     set_kind("binary")
-    add_deps("Engine")
-    add_headerfiles("include/Game/*.h", "include/Game/*.hpp")
-    add_files("src/Game/**.cpp")
+    add_deps("A4Engine")
+    add_headerfiles("include/A4Game/*.h", "include/A4Game/*.hpp")
+    add_files("src/A4Game/**.cpp")
 
+target("A4Test")
+    set_kind("binary")
+    add_deps("A4Engine")
+    add_headerfiles("include/A4Test/*.h", "include/A4Test/*.hpp")
+    add_files("src/A4Test/**.cpp")
+    add_packages("openal-soft", "dr_wav")
+
+target("A43D")
+    set_kind("binary")
+    add_deps("A4Engine")
+    add_headerfiles("include/A43D/*.h", "include/A43D/*.hpp")
+    add_files("src/A43D/**.cpp")
+    add_packages("glew")
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
 --
