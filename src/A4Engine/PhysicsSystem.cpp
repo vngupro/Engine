@@ -15,6 +15,10 @@ m_timestep(1.f / 50.f)
 		throw std::runtime_error("only one PhysicsSystem can be created");
 
 	s_instance = this;
+
+	// Par default
+	SetGravity({ 0.f, 981.f });
+	SetDamping(0.9f);
 }
 
 PhysicsSystem::~PhysicsSystem()
