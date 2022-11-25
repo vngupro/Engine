@@ -161,36 +161,36 @@ int main()
 	VelocitySystem velocitySystem(registry);
 	PhysicsSystem physicsSystem(registry);
 
-	// Audio
-	// Marche Pas
-	//AudioSystem audioSystem(registry);
+	// ------------------- AUDIO -----------------
+	// VERSION CPP Marche Pas
+	AudioSystem audioSystem(registry);
+	// ----------------
 	
-	//std::shared_ptr<Audio> audio = ResourceManager::Instance().GetAudio("assets/siren.wav");
-	//audio.get()->Play();
+	// Décommenter en dessous et commenter au dessus -> ca devrait marcher
+	//// VERSION DIRECT QUI Marche
+	//const char* deviceList = alcGetString(nullptr, ALC_ALL_DEVICES_SPECIFIER);
+	//std::vector<std::string> devices;
+	//while (true)
+	//{
+	//	std::size_t length = std::strlen(deviceList);
+	//	if (length == 0)
+	//		break;
 
-	// Marche
-	const char* deviceList = alcGetString(nullptr, ALC_ALL_DEVICES_SPECIFIER);
-	std::vector<std::string> devices;
-	while (true)
-	{
-		std::size_t length = std::strlen(deviceList);
-		if (length == 0)
-			break;
+	//	devices.emplace_back(deviceList, length);
 
-		devices.emplace_back(deviceList, length);
+	//	deviceList += length + 1;
+	//}
+	//-------------------------------------
 
-		deviceList += length + 1;
-	}
-
-	ALCdevice* device = alcOpenDevice(devices[0].c_str());
-	//std::cout << alGetError() << std::endl;
-	//std::cout << alcGetError(device) << std::endl;
-	//std::cout << GetError(alGetError()) << std::endl;
-	ALCcontext* context = alcCreateContext(device, nullptr);
-	//std::cout << alGetError() << std::endl;
-	//std::cout << GetError(alGetError()) << std::endl;
-	alcMakeContextCurrent(context);
-	//std::cout << GetError(alGetError()) << std::endl;
+	//ALCdevice* device = alcOpenDevice(devices[0].c_str());
+	////std::cout << alGetError() << std::endl;
+	////std::cout << alcGetError(device) << std::endl;
+	////std::cout << GetError(alGetError()) << std::endl;
+	//ALCcontext* context = alcCreateContext(device, nullptr);
+	////std::cout << alGetError() << std::endl;
+	////std::cout << GetError(alGetError()) << std::endl;
+	//alcMakeContextCurrent(context);
+	////std::cout << GetError(alGetError()) << std::endl;
 
 	ALuint buffer;
 	alGenBuffers(1, &buffer);
@@ -222,6 +222,12 @@ int main()
 
 	alSourcePlay(source);
 
+	// Marche pas
+	//std::shared_ptr<Audio> audio = ResourceManager::Instance().GetAudio("assets/siren.wav");
+	//audio.get()->Play();
+
+	//--------------------------------------------
+	
 	// Player Input
 	InputManager::Instance().BindKeyPressed(SDLK_q, "MoveLeft");
 	InputManager::Instance().BindKeyPressed(SDLK_d, "MoveRight");
