@@ -161,72 +161,12 @@ int main()
 	VelocitySystem velocitySystem(registry);
 	PhysicsSystem physicsSystem(registry);
 
-	// ------------------- AUDIO -----------------
-	// VERSION CPP Marche Pas
+
 	AudioSystem audioSystem(registry);
-	// ----------------
-	
-	// Décommenter en dessous et commenter au dessus -> ca devrait marcher
-	//// VERSION DIRECT QUI Marche
-	//const char* deviceList = alcGetString(nullptr, ALC_ALL_DEVICES_SPECIFIER);
-	//std::vector<std::string> devices;
-	//while (true)
-	//{
-	//	std::size_t length = std::strlen(deviceList);
-	//	if (length == 0)
-	//		break;
-
-	//	devices.emplace_back(deviceList, length);
-
-	//	deviceList += length + 1;
-	//}
-	//-------------------------------------
-
-	//ALCdevice* device = alcOpenDevice(devices[0].c_str());
-	////std::cout << alGetError() << std::endl;
-	////std::cout << alcGetError(device) << std::endl;
-	////std::cout << GetError(alGetError()) << std::endl;
-	//ALCcontext* context = alcCreateContext(device, nullptr);
-	////std::cout << alGetError() << std::endl;
-	////std::cout << GetError(alGetError()) << std::endl;
-	//alcMakeContextCurrent(context);
-	////std::cout << GetError(alGetError()) << std::endl;
-
-	ALuint buffer;
-	alGenBuffers(1, &buffer);
-
-	ALuint source;
-	alGenSources(1, &source);
-	alSourcei(source, AL_LOOPING, AL_TRUE);
-
-	drwav wav;
-	if (!drwav_init_file(&wav, "assets/siren.wav", nullptr))
-	{
-		std::cout << "failed to load file" << std::endl;
-		return 0;
-	}
-
-	std::vector<std::int16_t> samples(wav.totalPCMFrameCount * wav.channels);
-	drwav_read_pcm_frames_s16(&wav, wav.totalPCMFrameCount, samples.data());
-
-	alBufferData(buffer,
-		(wav.channels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
-		samples.data(),
-		samples.size() * sizeof(std::int16_t),
-		wav.sampleRate);
-
-	drwav_uninit(&wav);
-	alSourcei(source, AL_BUFFER, buffer);
-
-	//alListener3f(AL_POSITION, 640.f / 100.f, 360.f / 100.f, 0.f);
-
-	alSourcePlay(source);
-
-	// Marche pas
-	//std::shared_ptr<Audio> audio = ResourceManager::Instance().GetAudio("assets/siren.wav");
+	std::shared_ptr<Audio> audio = ResourceManager::Instance().GetAudio("assets/siren.wav");
+	//audioSystem.Play(audio);
+	audio->Play();
 	//audio.get()->Play();
-
-	//--------------------------------------------
 	
 	// Player Input
 	InputManager::Instance().BindKeyPressed(SDLK_q, "MoveLeft");

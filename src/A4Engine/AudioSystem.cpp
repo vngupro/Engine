@@ -2,6 +2,7 @@
 #include <A4Engine/Audio.hpp>
 #include <A4Engine/Transform.hpp>
 #include <iostream>
+#include <dr_wav.h>
 
 std::string AudioSystem::GetError(int err)
 {
@@ -20,6 +21,7 @@ std::string AudioSystem::GetError(int err)
 AudioSystem::AudioSystem(entt::registry& registry) 
 	:m_registry(registry)
 {
+	
 	const char* deviceList = alcGetString(nullptr, ALC_ALL_DEVICES_SPECIFIER);
 	std::vector<std::string> devices;
 	while (true)
@@ -43,13 +45,23 @@ AudioSystem::AudioSystem(entt::registry& registry)
 
 AudioSystem::~AudioSystem()
 {
-	//alcMakeContextCurrent(nullptr);
-	//
-	//if(m_context)
-	//	alcDestroyContext(m_context);
-	//
-	//if(m_device)
-	//	alcCloseDevice(m_device);
+	alcMakeContextCurrent(nullptr);
+	
+	if(m_context)
+		alcDestroyContext(m_context);
+	
+	if(m_device)
+		alcCloseDevice(m_device);
+}
+
+ALCcontext* AudioSystem::GetContext() const
+{
+	return m_context;
+}
+
+void AudioSystem::Play(std::shared_ptr<Audio> audio)
+{
+	audio.get()->Play();
 }
 //
 //void AudioSystem::Update(float deltaTime)

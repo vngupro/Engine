@@ -36,23 +36,6 @@ Audio::~Audio()
 Audio Audio::LoadAudioFromFile(const std::string& audioPath)
 {
 	Audio audio;
-	drwav wav;
-	//if (!drwav_init_file(&wav, audioPath.c_str(), nullptr))
-	//{
-	//	audio.isValid = false;
-	//	return audio;
-	//}
-
-	//std::vector<std::int16_t> samples(wav.totalPCMFrameCount * wav.channels);
-	//drwav_read_pcm_frames_s16(&wav, wav.totalPCMFrameCount, samples.data());
-
-	//alBufferData(audio.m_buffer,
-	//	(wav.channels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
-	//	samples.data(),
-	//	samples.size() * sizeof(std::int16_t),
-	//	wav.sampleRate);
-
-	//drwav_uninit(&wav);
 	LoadWavFromFile(audioPath, audio);
 	//if (!audio.IsValid())
 	//{
