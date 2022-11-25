@@ -124,7 +124,10 @@ void ResourceManager::Purge()
 		if (it->second.use_count() > 1)
 			++it;
 		else
+		{
 			it = m_audios.erase(it);
+		}
+			
 	}
 
 }
@@ -143,7 +146,7 @@ const std::shared_ptr<Audio>& ResourceManager::GetAudio(const std::string& audio
 	if (it != m_audios.end())
 		return it->second; // Oui, on peut le renvoyer
 
-	Audio audio = Audio::LoadAudioFromFile(audioPath);
+	Audio audio = std::move(Audio::LoadAudioFromFile(audioPath));
 
 	if (!audio.IsValid())
 	{

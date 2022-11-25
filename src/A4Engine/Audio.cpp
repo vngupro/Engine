@@ -13,7 +13,6 @@ Audio::Audio()
 {
 	alGenBuffers(1, &m_buffer);
 	alGenSources(1, &m_source);
-	//alSourcei(m_source, AL_LOOPING, AL_TRUE);
 	isValid = false;
 }
 
@@ -22,15 +21,17 @@ Audio::Audio(Audio&& audio) noexcept
 	m_buffer = audio.m_buffer;
 	m_source = audio.m_source;
 	isValid = audio.isValid;
+	audio.m_source = 0;
+	audio.m_buffer = 0;
 }
 
 Audio::~Audio()
-{
-	//if(m_source)
-	//	alDeleteSources(1, &m_source);
-	//
-	//if(m_buffer)
-	//	alDeleteBuffers(1, &m_buffer);
+{	
+	if(m_source)
+		alDeleteSources(1, &m_source);
+	
+	if(m_buffer)
+		alDeleteBuffers(1, &m_buffer);
 }
 
 Audio Audio::LoadAudioFromFile(const std::string& audioPath)
@@ -104,4 +105,14 @@ void Audio::Play(Vector2f position /* = Vector2f(0, 0)*/, Vector2f velocity /* =
 
 	//alSource3f(m_source, AL_POSITION, position.x / 100.f, position.y / 100.f, 0.f);
 	//alSource3f(m_source, AL_VELOCITY, velocity.x / 100.f, velocity.y / 100.f, 0.f);
+}
+
+ALuint Audio::GetBuffer() const
+{
+	return m_buffer;
+}
+
+ALuint Audio::GetSource() const
+{
+	return m_source;
 }

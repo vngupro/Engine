@@ -9,9 +9,8 @@ class A4ENGINE_API Audio
 {
 public:
 	Audio();
-	Audio(const Audio&) = default;
+	Audio(const Audio&) = delete;
 	Audio(Audio&&) noexcept;
-	//Audio(Audio&&);
 	~Audio();
 
 	static Audio LoadAudioFromFile(const std::string& audioPath);
@@ -21,11 +20,12 @@ public:
 
 	bool IsValid() const;
 	void Play(Vector2f position = Vector2f(0, 0), Vector2f = Vector2f(0, 0));
-	
+	ALuint GetBuffer() const;
+	ALuint GetSource() const;
+
 public:
 	ALuint m_buffer;
 	ALuint m_source;
-
 	bool isValid;
 };
 
