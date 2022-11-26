@@ -44,7 +44,8 @@ void AudioSystem::Update(float deltaTime)
 		Transform& entityTransform = view.get<Transform>(entity);
 		RigidBodyComponent& rb = view.get<RigidBodyComponent>(entity);
 		
-		//entityAudio.Play(entityTransform.GetPosition(), rb.GetLinearVelocity());
-		//entityAudio.Play();
+		// update only if is playing how do i know this ??
+		//entityAudio.SetListener(entityTransform.GetGlobalPosition());
+		entityAudio.Update(entityTransform.GetPosition(), rb.GetLinearVelocity());
 	}
 }

@@ -22,14 +22,19 @@ public:
 	//static Audio LoadMp3FromFile(const std::string& audioPath);
 
 	bool IsValid() const;
-	void Play(Vector2f position = Vector2f(0, 0), Vector2f = Vector2f(0, 0));
+	bool IsPlaying() const;
+	void Play(bool looping = false);
+	//void Stop();
+	void  Update(Vector2f position = Vector2f(0, 0), Vector2f velocity = Vector2f(0, 0));
 	ALuint GetBuffer() const;
 	ALuint GetSource() const;
+	void SetListener(Vector2f position);
 
 public:
 	ALuint m_buffer;
 	ALuint m_source;
 	bool isValid;
+	bool isPlaying;
 };
 
 //alListener3f(AL_POSITION, 640.f / 100.f, 360.f / 100.f, 0.f);

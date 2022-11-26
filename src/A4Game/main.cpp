@@ -143,28 +143,28 @@ std::string GetError(int err)
 
 int main()
 {
-	// Initialization
+	// SDL Initialization
 	SDLpp sdl;
-
 	SDLppWindow window("A4Engine", 1280, 720);
 	SDLppRenderer renderer(window, "direct3d11", SDL_RENDERER_PRESENTVSYNC);
 
+	// Manager
 	ResourceManager resourceManager(renderer);
 	InputManager inputManager;
 
+	// ImGui
 	SDLppImGui imgui(window, renderer);
-
 	ImGui::SetCurrentContext(imgui.GetContext());
+
+	// Entt Registry
 	entt::registry registry;
 
+	// System
 	AnimationSystem animSystem(registry);
 	RenderSystem renderSystem(renderer, registry);
 	VelocitySystem velocitySystem(registry);
 	PhysicsSystem physicsSystem(registry);
-
-
 	AudioSystem audioSystem(registry);
-	//audio->Play();
 	
 	// Player Input
 	InputManager::Instance().BindKeyPressed(SDLK_q, "MoveLeft");
@@ -181,9 +181,13 @@ int main()
 	InputManager::Instance().BindKeyPressed(SDLK_UP, "CameraMoveUp");
 	InputManager::Instance().BindKeyPressed(SDLK_DOWN, "CameraMoveDown");
 
+	// Entity
 	entt::entity cameraEntity = CreateCamera(registry);
 	entt::entity playerEntity = CreatePlayer(registry);
 	registry.get<RigidBodyComponent>(playerEntity).TeleportTo(Vector2f(1280.f / 2.f, 720.f / 2.f));
+	registry.get<Audio>(playerEntity).Play(true);
+	//alListener3f(AL_POSITION, 1280.f / 2.f, 720.f / 2.f, 0.f);
+	//registry.get<Audio>(playerEntity).SetListener(registry.get<Transform>(playerEntity).GetGlobalPosition());
 
 	// Game Loop
 	Uint64 lastUpdate = SDL_GetPerformanceCounter();
@@ -230,7 +234,6 @@ int main()
 		ImGui::LabelText("FPS", "%f", 1.f / deltaTime);
 
 		EntityInspector("Camera", registry, cameraEntity);
-		
 		physicsSystem.DebugDraw(renderer, registry.get<Transform>(cameraEntity).GetTransformMatrix().Inverse());
 		imgui.Render();
 		renderer.Present();
@@ -468,7 +471,6 @@ entt::entity CreatePlayer(entt::registry& registry)
 
 	std::shared_ptr<CollisionShape> collider = std::make_shared<CircleShape>(16.f);
 	std::shared_ptr<Audio> audio = ResourceManager::Instance().GetAudio("assets/siren.wav");
-
 	entt::entity entity = registry.create();
 	registry.emplace<GraphicsComponent>(entity, std::move(sprite));
 	registry.emplace<Transform>(entity);

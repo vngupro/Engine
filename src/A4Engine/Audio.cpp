@@ -14,6 +14,7 @@ Audio::Audio()
 	alGenBuffers(1, &m_buffer);
 	alGenSources(1, &m_source);
 	isValid = false;
+	isPlaying = false;
 }
 
 Audio::Audio(Audio&& audio) noexcept
@@ -21,6 +22,7 @@ Audio::Audio(Audio&& audio) noexcept
 	m_buffer = audio.m_buffer;
 	m_source = audio.m_source;
 	isValid = audio.isValid;
+	isPlaying = audio.isPlaying;
 	audio.m_source = 0;
 	audio.m_buffer = 0;
 }
@@ -95,17 +97,37 @@ bool Audio::IsValid() const
 {
 	return isValid;
 }
+bool Audio::IsPlaying() const
+{
+	return isPlaying;
+}
 
-void Audio::Play(Vector2f position /* = Vector2f(0, 0)*/, Vector2f velocity /* = Vector2f(0, 0)*/)
+void Audio::Play(bool looping /*= false*/)
 {
 	alSourcei(m_source, AL_BUFFER, m_buffer);
-	alSourcei(m_source, AL_LOOPING, AL_TRUE);
-	alListener3f(AL_POSITION, position.x, position.y, 0.f);
-	alSourcePlay(m_source);
+	
+	if(looping) 
+		alSourcei(m_source, AL_LOOPING, AL_TRUE);
 
+	alSourcePlay(m_source);
+}
+
+void Audio::Update(Vector2f position /* = Vector2f(0, 0)*/, Vector2f velocity /* = Vector2f(0, 0)*/)
+{
 	alSource3f(m_source, AL_POSITION, position.x / 100.f, position.y / 100.f, 0.f);
 	alSource3f(m_source, AL_VELOCITY, velocity.x / 100.f, velocity.y / 100.f, 0.f);
 }
+
+void Audio::SetListener(Vector2f position)
+{
+	// the ears of the scene but not sure how i should use them could be player or camera
+	alListener3f(AL_POSITION, position.x, position.y, 0.f);
+}
+
+//void Audio::Stop()
+//{
+//
+//}
 
 ALuint Audio::GetBuffer() const
 {
