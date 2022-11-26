@@ -30,6 +30,7 @@
 #include <A4Engine/AudioSystem.hpp>
 #include <A4Engine/Audio.hpp>
 #include <A4Engine/AudioComponent.hpp>
+#include <A4Engine/SaveLoadComponent.hpp>
 #include <chipmunk/chipmunk.h>
 #include <entt/entt.hpp>
 #include <fmt/core.h>
@@ -188,7 +189,6 @@ int main()
 	registry.get<Audio>(playerEntity).Play(true);
 	//alListener3f(AL_POSITION, 1280.f / 2.f, 720.f / 2.f, 0.f);
 	//registry.get<Audio>(playerEntity).SetListener(registry.get<Transform>(playerEntity).GetGlobalPosition());
-
 	// Game Loop
 	Uint64 lastUpdate = SDL_GetPerformanceCounter();
 	bool isOpen = true;
@@ -477,6 +477,7 @@ entt::entity CreatePlayer(entt::registry& registry)
 	registry.emplace<InputComponent>(entity);
 	registry.emplace<PlayerControlled>(entity);
 	registry.emplace<Audio>(entity, std::move(*audio.get()));
+	registry.emplace<SaveLoadComponent>(entity);
 	//registry.emplace<Audio>(entity, audio);
 
 	auto& entityBody = registry.emplace<RigidBodyComponent>(entity, RigidBodyComponent::Kinematic{});
