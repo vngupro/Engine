@@ -4,11 +4,11 @@
 
 class SaveLoadComponent
 {
-public:
-
-	void Save();
-	void Load();
-private:
-	entt::entity& m_save;
-	entt::entity& m_load;
+//public:
+//
+//	void Save();
+//	void Load();
+//private:
+//	entt::entity& m_save;
+//	entt::entity& m_load;
 };

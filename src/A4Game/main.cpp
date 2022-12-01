@@ -186,13 +186,13 @@ int main()
 	entt::entity cameraEntity = CreateCamera(registry);
 	entt::entity playerEntity = CreatePlayer(registry);
 	registry.get<RigidBodyComponent>(playerEntity).TeleportTo(Vector2f(1280.f / 2.f, 720.f / 2.f));
-	registry.get<Audio>(playerEntity).Play(true);
+	//registry.get<Audio>(playerEntity).Play(true);
 	//alListener3f(AL_POSITION, 1280.f / 2.f, 720.f / 2.f, 0.f);
 	//registry.get<Audio>(playerEntity).SetListener(registry.get<Transform>(playerEntity).GetGlobalPosition());
 	// Game Loop
 	Uint64 lastUpdate = SDL_GetPerformanceCounter();
 	bool isOpen = true;
-
+	bool isPlaying = false;
 	while (isOpen)
 	{
 		// Frame
@@ -209,7 +209,8 @@ int main()
 
 			imgui.ProcessEvent(event);
 
-			InputManager::Instance().HandleEvent(event);
+			if(isPlaying)
+				InputManager::Instance().HandleEvent(event);
 		}
 
 		// Render
@@ -218,22 +219,37 @@ int main()
 		renderer.Clear();
 
 		// Input
-		HandleCameraMovement(registry, cameraEntity, deltaTime);
-		HandlePlayerMovement(registry, playerEntity, deltaTime);
+		if(isPlaying)
+		{
+			HandleCameraMovement(registry, cameraEntity, deltaTime);
+			HandlePlayerMovement(registry, playerEntity, deltaTime);
 
-		// System Update
-		animSystem.Update(deltaTime);
-		velocitySystem.Update(deltaTime);
-		physicsSystem.Update(deltaTime);
-		renderSystem.Update(deltaTime);
-		audioSystem.Update(deltaTime);
+			// System Update
+			animSystem.Update(deltaTime);
+			velocitySystem.Update(deltaTime);
+			physicsSystem.Update(deltaTime);
+			renderSystem.Update(deltaTime);
+			audioSystem.Update(deltaTime);
 
-		PlayerInputSystem(registry);
-		PlayerControllerSystem(registry);
+			PlayerInputSystem(registry);
+			PlayerControllerSystem(registry);
 
-		ImGui::LabelText("FPS", "%f", 1.f / deltaTime);
+			ImGui::LabelText("FPS", "%f", 1.f / deltaTime);
 
-		EntityInspector("Camera", registry, cameraEntity);
+			EntityInspector("Camera", registry, cameraEntity);
+		}
+
+
+
+		ImGui::Begin("Menu");
+
+		if(ImGui::Button("Play"))
+		{
+			isPlaying = true;
+		}
+
+		ImGui::End();
+
 		physicsSystem.DebugDraw(renderer, registry.get<Transform>(cameraEntity).GetTransformMatrix().Inverse());
 		imgui.Render();
 		renderer.Present();

@@ -8,15 +8,15 @@
 // or use somehting similar to observer
 class A4ENGINE_API SaveLoadSystem
 {
-public:
-	SaveLoadSystem() = default;
-	~SaveLoadSystem() = default;
-	
-	// Set State
-	void Save();
-	// Get State
-	void Load();
-
-private:
-	std::unordered_map<int, std::vector<entt::entity&>> m_saves;
+//public:
+//	SaveLoadSystem() = default;
+//	~SaveLoadSystem() = default;
+//	
+//	// Set State
+//	void Save();
+//	// Get State
+//	void Load();
+//
+//private:
+//	std::unordered_map<int, std::vector<entt::entity&>> m_saves;
 };
