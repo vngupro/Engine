@@ -39,6 +39,8 @@
 #include <imgui_impl_sdlrenderer.h>
 #include <AL/al.h>
 #include <AL/alc.h>
+#include <cstdlib>
+
 //#include <dr_wav.h>
 //#include <../src/A4Engine/DrWavDefine.cpp>
 
@@ -50,6 +52,7 @@ entt::entity CreateHouse(entt::registry& registry);
 entt::entity CreateRunner(entt::registry& registry, std::shared_ptr<Spritesheet> spritesheet);
 entt::entity CreatePlayer(entt::registry& registry);
 entt::entity CreateBullet(entt::registry& registry);
+entt::entity CreateEnemy(entt::registry& registry);
 
 void EntityInspector(const char* windowName, entt::registry& registry, entt::entity entity);
 
@@ -114,7 +117,6 @@ void PlayerControllerSystem(entt::registry& registry)
 			// 
 			registry.get<RigidBodyComponent>(bulletEntity).TeleportTo(Vector2f(pos.x, pos.y - 75));
 			registry.get<RigidBodyComponent>(bulletEntity).SetLinearVelocity(Vector2f(0.0f, -500.0f));
-
 		}
 
 		
@@ -243,6 +245,10 @@ int main()
 	Uint64 lastUpdate = SDL_GetPerformanceCounter();
 	bool isOpen = true;
 	bool isPlaying = false;
+	float spawnTimer = 0.0f;
+	float spawnDelay = 1.0f;
+	std::srand(std::time(nullptr)); // use current time as seed for random generator
+
 	while (isOpen)
 	{
 		// Frame
@@ -287,6 +293,17 @@ int main()
 			ImGui::LabelText("FPS", "%f", 1.f / deltaTime);
 
 			EntityInspector("Camera", registry, cameraEntity);
+
+			spawnTimer += deltaTime;
+			if(spawnTimer > spawnDelay)
+			{
+				spawnTimer = 0.0f;
+				entt::entity enemyEntity = CreateEnemy(registry);
+				
+				float rng = std::rand() % 1280;
+				registry.get<RigidBodyComponent>(enemyEntity).TeleportTo(Vector2f(rng, 0.0f));
+				
+			}
 		}
 
 
@@ -575,6 +592,24 @@ entt::entity CreateBullet(entt::registry& registry)
 
 	auto& entityBody = registry.emplace<RigidBodyComponent>(entity, RigidBodyComponent::Kinematic{});
 	entityBody.AddShape(collider, Vector2f(0.f, 0.f));
+
+	return entity;
+}
+
+entt::entity CreateEnemy(entt::registry& registry)
+{
+	std::shared_ptr<Sprite> sprite = std::make_shared<Sprite>(ResourceManager::Instance().GetTexture("assets/meteorBrown_big1.png"));
+	sprite->SetOrigin({ 0.5f, 0.5f });
+
+	std::shared_ptr<CollisionShape> collider = std::make_shared<CircleShape>(32.f);
+
+	entt::entity entity = registry.create();
+	registry.emplace<GraphicsComponent>(entity, std::move(sprite));
+	registry.emplace<Transform>(entity);
+	registry.emplace<InputComponent>(entity);
+
+	auto& entityBody = registry.emplace<RigidBodyComponent>(entity, 80.f, std::numeric_limits<float>::infinity());
+	entityBody.AddShape(collider, Vector2f(0.f, 0.f), false);
 
 	return entity;
 }
