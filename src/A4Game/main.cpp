@@ -106,6 +106,14 @@ void PlayerControllerSystem(entt::registry& registry)
 		if (entityInput.rotateRight)
 			angle -= 400.0f;
 
+		if(entityInput.fire)
+		{
+			//CreateBullet(registry);
+			entt::entity bulletEntity = CreateBullet(registry);
+			Vector2f pos = entityPhysics.GetPosition();
+			registry.get<RigidBodyComponent>(bulletEntity).TeleportTo(Vector2f(pos.x, pos.y - 75));
+
+		}
 
 		
 		if(
@@ -222,6 +230,10 @@ int main()
 	entt::entity cameraEntity = CreateCamera(registry);
 	entt::entity playerEntity = CreatePlayer(registry);
 	registry.get<RigidBodyComponent>(playerEntity).TeleportTo(Vector2f(1280.f / 2.f, 720.f / 2.f));
+
+	//entt::entity bulletEntity = CreateBullet(registry);
+	//registry.get<RigidBodyComponent>(bulletEntity).TeleportTo(Vector2f(1280.f / 2.f , 720.f / 2.f + 10));
+
 	//registry.get<Audio>(playerEntity).Play(true);
 	//alListener3f(AL_POSITION, 1280.f / 2.f, 720.f / 2.f, 0.f);
 	//registry.get<Audio>(playerEntity).SetListener(registry.get<Transform>(playerEntity).GetGlobalPosition());
@@ -558,6 +570,9 @@ entt::entity CreateBullet(entt::registry& registry)
 	registry.emplace<GraphicsComponent>(entity, std::move(sprite));
 	registry.emplace<Transform>(entity);
 	registry.emplace<InputComponent>(entity);
+
+	auto& entityBody = registry.emplace<RigidBodyComponent>(entity, RigidBodyComponent::Kinematic{});
+	entityBody.AddShape(collider, Vector2f(0.f, 0.f));
 
 	return entity;
 }
