@@ -108,10 +108,12 @@ void PlayerControllerSystem(entt::registry& registry)
 
 		if(entityInput.fire)
 		{
-			//CreateBullet(registry);
 			entt::entity bulletEntity = CreateBullet(registry);
 			Vector2f pos = entityPhysics.GetPosition();
+			// should depend from direction but no time
+			// 
 			registry.get<RigidBodyComponent>(bulletEntity).TeleportTo(Vector2f(pos.x, pos.y - 75));
+			registry.get<RigidBodyComponent>(bulletEntity).SetLinearVelocity(Vector2f(0.0f, -500.0f));
 
 		}
 

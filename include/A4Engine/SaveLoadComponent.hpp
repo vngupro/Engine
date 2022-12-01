@@ -4,10 +4,12 @@
 
 class SaveLoadComponent
 {
-//public:
-//
-//	void Save();
-//	void Load();
+public:
+	//SaveLoadComponent() = default;
+	//~SaveLoadComponent() = default;
+	
+	void SaveEntity();
+	void LoadEntity();
 //private:
 //	entt::entity& m_save;
 //	entt::entity& m_load;
