@@ -73,11 +73,12 @@ struct PlayerControlled {};
 
 void PlayerControllerSystem(entt::registry& registry)
 {
-	auto view = registry.view<RigidBodyComponent, InputComponent>();
+	auto view = registry.view<RigidBodyComponent, InputComponent, Audio>();
 	for (entt::entity entity : view)
 	{
 		auto& entityInput = view.get<InputComponent>(entity);
 		auto& entityPhysics = view.get<RigidBodyComponent>(entity);
+		auto& entityAudio = view.get<Audio>(entity);
 
 		Vector2f velocity = Vector2f(0.f, 0.f);
 		//velocity.y = entityPhysics.GetLinearVelocity().y;
@@ -104,6 +105,41 @@ void PlayerControllerSystem(entt::registry& registry)
 
 		if (entityInput.rotateRight)
 			angle -= 400.0f;
+
+
+		
+		if(
+			entityInput.left ||
+			entityInput.right ||
+			entityInput.down ||
+			entityInput.up ||
+			entityInput.rotateLeft ||
+			entityInput.rotateRight
+			)
+		{
+			//registry.get<Audio>(playerEntity).Play(true);
+			if(!entityAudio.isPlaying)
+			{
+				entityAudio.Play(true);
+				entityAudio.isPlaying = true;
+			}
+				
+		}
+
+		if (
+			!entityInput.left &&
+			!entityInput.right &&
+			!entityInput.down &&
+			!entityInput.up &&
+			!entityInput.rotateLeft &&
+			!entityInput.rotateRight
+			)
+		{
+			//registry.get<Audio>(playerEntity).Play(true);
+			
+			entityAudio.Play(false);
+			entityAudio.isPlaying = false;
+		}
 
 		entityPhysics.SetLinearVelocity(velocity);
 		entityPhysics.SetAngularVelocity(angle);
@@ -248,6 +284,15 @@ int main()
 			isPlaying = true;
 		}
 
+		if(ImGui::Button("Save"))
+		{
+			//SaveLoadSystem::Save();
+		}
+
+		if(ImGui::Button("Load"))
+		{
+			//SaveLoadSystem::Load();
+		}
 		ImGui::End();
 
 		physicsSystem.DebugDraw(renderer, registry.get<Transform>(cameraEntity).GetTransformMatrix().Inverse());
@@ -486,7 +531,7 @@ entt::entity CreatePlayer(entt::registry& registry)
 	sprite->SetOrigin({ 0.5f, 0.5f });
 
 	std::shared_ptr<CollisionShape> collider = std::make_shared<CircleShape>(16.f);
-	std::shared_ptr<Audio> audio = ResourceManager::Instance().GetAudio("assets/siren.wav");
+	std::shared_ptr<Audio> audio = ResourceManager::Instance().GetAudio("assets/ship3.wav");
 	entt::entity entity = registry.create();
 	registry.emplace<GraphicsComponent>(entity, std::move(sprite));
 	registry.emplace<Transform>(entity);
